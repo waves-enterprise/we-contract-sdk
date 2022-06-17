@@ -1,92 +1,192 @@
 # we-contract-sdk
 
-Java/Kotlin contract SDK used for building Docker smart contracts
+Java/Kotlin contract SDK used for building Docker smart contracts.
+
+All transaction handling is done via methods of a single class marked with `@ContractHandler` annotation. 
+The methods which implement handling logic are marked with `@ContractInit` (for CreateContractTx) and `@ContractAction` (for CallContractTx).      
+
+## Module structure
+
+- **we-contract-sdk-api.**
+Contains mainly interfaces and annotations for marking contract handlers and their methods. 
+hould be used directly by *-contract-api modules.
+- **we-contract-sdk-core.**
+Core processing contract transactions logic. 
+Transport and mapping is not implemented in core module and should be provided externally. 
+- **we-contract-sdk-grpc.**
+Implementation with GRPC transport and Jackson object mapping. 
+Should be used directly by the module which starts and runs the contract.
 
 ## Getting started
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+### Dependencies
+#### Maven
+```xml
+<dependency>
+  <groupId>com.wavesenterprise</groupId>
+  <artifactId>we-contract-sdk-grpc</artifactId>
+  <version>1.0.0</version>
+</dependency>
+```
+#### Gradle
+```kotlin
+dependencies {
+    implementation("com.wavesenterprise:we-contract-sdk-grpc:1.0.0")
+} 
+```
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+### Quick start
+All examples are taken from the [Samples](samples).
+#### 1. Create contract handler
+```java
+@ContractHandler
+public class SampleContractHandler {
 
-## Add your files
+    private final ContractState contractState;
+    private final ContractTransaction tx;
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+    private final Mapping<List<MySampleContractDto>> mapping;
+
+    public SampleContractHandler(ContractState contractState, ContractTransaction tx) {
+        this.contractState = contractState;
+        mapping = contractState.getMapping(
+                new TypeReference<List<MySampleContractDto>>() {
+                }, "SOME_PREFIX");
+        this.tx = tx;
+    }
+}
 
 ```
-cd existing_repo
-git remote add origin https://gitlab.wvservices.com/waves-enterprise/java-sdk/we-contract-sdk.git
-git branch -M main
-git push -uf origin main
+
+#### 2. Add `@ContractInit` and `@ContractAction` method to handle contract transactions
+```java
+public class SampleContractHandler {
+
+    // ... 
+
+    @ContractInit
+    public void createContract(String initialParam) {
+        contractState.put("INITIAL_PARAM", initialParam);
+    }
+
+    @ContractAction
+    public void doSomeAction(String dtoId) {
+        contractState.put("INITIAL_PARAM", Instant.ofEpochMilli(tx.getTimestamp().getUtcTimestampMillis()));
+
+        if (mapping.has(dtoId)) {
+            throw new IllegalArgumentException("Already has " + dtoId + " on state");
+        }
+        mapping.put(dtoId,
+                Arrays.asList(
+                        new MySampleContractDto("john", 18),
+                        new MySampleContractDto("harry", 54)
+                ));
+    }
+}
 ```
 
-## Integrate with your tools
+#### 3. Dispatch contract with specified contract handler and settings
+```java
+public class MainDispatch {
+    public static void main(String[] args) {
+        ContractDispatcher contractDispatcher = GrpcJacksonContractDispatcherBuilder.builder()
+                .contractHandlerType(SampleContractHandler.class)
+                .objectMapper(getObjectMapper())
+                .build();
 
-- [ ] [Set up project integrations](https://gitlab.wvservices.com/waves-enterprise/java-sdk/we-contract-sdk/-/settings/integrations)
+        contractDispatcher.dispatch();
+    }
 
-## Collaborate with your team
+    private static ObjectMapper getObjectMapper() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        return objectMapper;
+    }
+}
+```
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+#### 4. Create Docker image 
 
-## Test and Deploy
+```dockerfile
+FROM openjdk:8-alpine
+MAINTAINER Waves Enterprise <>
 
-Use the built-in continuous integration in GitLab.
+ENV JAVA_MEM="-Xmx256M"
+ENV JAVA_OPTS=""
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+ADD build/libs/*-all.jar app.jar
 
-***
+RUN chmod +x app.jar
+RUN eval $SET_ENV_CMD
+CMD ["/bin/sh", "-c", "eval ${SET_ENV_CMD} ; java $JAVA_MEM $JAVA_OPTS -jar app.jar"]
+```
+#### 5. Push to docker repository used by WE Node mining contract transactions 
+Publish to registry used by WE Blockchain Node. For convenience there is a bash script [build_and_push_to_docker.sh](samples/java8-sample-contract/build_and_push_to_docker.sh) which builds and pushes to specified registry.
+ 
+```shell
+ ./build_and_push_to_docker.sh my.registry.com/contracts/my-awesome-docker-contract:1.0.0
+```
 
-# Editing this README
+#### 6. Sign and broadcast transactions for creating and invoking published contract
+Use will need `image` and `imageHash` of the published contract to create it.  
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!).  Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
+CreateContractTx example
+```json
+{
+    "image": "my.registry.com/contracts/my-awesome-docker-contract:1.0.0",
+    "fee": 0,
+    "imageHash": "d17f6c1823176aa56e0e8184f9c45bc852ee9b076b06a586e40c23abde4d7dfa",
+    "type": 103,
+    "params": [
+        {
+            "type": "string",
+            "value": "createContract",
+            "key": "action"
+        },
+        {
+            "type": "string",
+            "value": "initialValue",
+            "key": "createContract"
+        }
+    ],
+    "version": 2,
+    "sender": "3M3ybNZvLG7o7rnM4F7ViRPnDTfVggdfmRX",
+    "feeAssetId": null,
+    "contractName": "myAwesomeContract"
+}
+```
+To call contract you will need `contractId = CreateContractTx.id`.
 
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+CallContractTx example
+```json
+{
+    "contractId": "7sVc6ybnqZr523xWK5Sg7xADsX597qga8iQNAS9f1D3c",
+    "fee": 0,
+    "type": 104,
+    "params": [
+      {
+        "type": "string",
+        "value": "doSomeAction",
+        "key": "action"
+      },
+      {
+        "type": "string",
+        "value": "someValue",
+        "key": "createContract"
+      }
+    ],
+    "version": 2,
+    "sender": "3M3ybNZvLG7o7rnM4F7ViRPnDTfVggdfmRX",
+    "feeAssetId": null,
+    "contractVersion": 1
+}
+```
+### Notes on usage
+#### Usage with Java 11+
+Library has been tested against java8 and java17. 
+When using with java17 additional java options should be specified for the io.grpc to enable optimizations.
 
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+```dockerfile
+--add-opens java.base/jdk.internal.misc=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED -Dio.netty.tryReflectionSetAccessible=true
+```
+Full example can be found in [Dockerfile](samples/java17-sample-contract/Dockerfile) for java17.
