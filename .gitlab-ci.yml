@@ -1,0 +1,75 @@
+# include job templates
+include:
+  - project: 'integrator1/devops/gitlab-ci-jobs'
+    ref: master
+    file: 'common/test-gradle.gitlab-ci.yml'
+  - project: 'integrator1/devops/gitlab-ci-jobs'
+    ref: master
+    file: 'common/deploy-argocd.gitlab-ci.yml'
+  - project: 'integrator1/devops/gitlab-ci-jobs'
+    ref: master
+    file: 'common/sonarqube.gitlab-ci.yml'
+  - project: 'integrator1/devops/gitlab-ci-jobs'
+    ref: master
+    file: 'common/build-gradle.gitlab-ci.yml'    
+
+stages:
+  - tests
+  - quality
+
+.artifacts_template: &artifacts
+  artifacts:
+    expire_in: 1 week
+    name: "${CI_COMMIT_SHORT_SHA}_${CI_JOB_ID}"
+    reports:
+      junit: "**/test-results/test/*.xml"  
+    paths:
+      - "**/build/reports/detekt/detekt.xml"
+      - "**/test-results/test/*.xml"
+      - "**/build/jacocoReports/test/jacocoTestReport.xml"
+      - images.json  
+      - "**/build/libs"
+
+# check code quality 
+code_quality:
+  extends:
+    - .check_code_quality
+  only:
+    - master
+    - dev
+    - merge_requests
+    - /^.*rc.*$/
+    - /^.*release.*$/    
+    - /^.*hotfix.*$/
+    
+tests&build:
+  extends:
+    - .test-gradle
+  script:
+    - mkdir -p $HOME/.docker
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"auth\":\"$(echo -n $CI_REGISTRY_USER:$CI_REGISTRY_PASSWORD | base64)\"}}}" > $HOME/.docker/config.json      
+    - ./gradlew -PmavenUser=$MAVEN_USER -PmavenPassword=$MAVEN_PASSWORD version
+    - ./gradlew -PmavenUser=$MAVEN_USER -PmavenPassword=$MAVEN_PASSWORD version check build publish
+    - docker images --format "{{json . }}" --no-trunc > images.json    
+  only:
+    - dev
+    - /^.*rc.*$/
+    - /^.*release.*$/    
+    - /^.*hotfix.*$/
+    - master
+  <<: *artifacts 
+
+tests-mr:
+  extends:
+    - .test-mr-gradle
+  script:
+    - git fetch origin $CI_MERGE_REQUEST_TARGET_BRANCH_NAME
+    - git fetch origin $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
+    - git config user.email "gitlab-ci@weintegrator.com"
+    - git config user.name "GitLab CI WeIntegrator"
+    - git checkout $CI_MERGE_REQUEST_TARGET_BRANCH_NAME
+    - git pull
+    - git merge origin/$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
+    - ./gradlew -PmavenUser=$MAVEN_USER -PmavenPassword=$MAVEN_PASSWORD check build
+    - docker images --format "{{json . }}" --no-trunc > images.json
+  <<: *artifacts 
