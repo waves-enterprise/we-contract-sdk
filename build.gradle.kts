@@ -4,6 +4,7 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.kotlin.gradle.plugin.statistics.ReportStatisticsToElasticSearch.password
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import kotlin.math.sign
 
 val kotlinVersion: String by project
 val kotlinCoroutinesVersion: String by project
@@ -34,11 +35,15 @@ val sonaTypeMavenUser: String? by project
 val sonaTypeMavenPassword: String? by project
 
 val weMavenBasePath = "https://artifacts.wavesenterprise.com/repository/"
+
 val sonaTypeBasePath = "https://s01.oss.sonatype.org"
+val gitHubProject = "waves-enterprise/we-contract-sdk"
+val githubUrl = "https://github.com/$gitHubProject"
 
 plugins {
     kotlin("jvm") apply false
     `maven-publish`
+    signing
     kotlin("plugin.spring") apply false
     id("org.springframework.boot") apply false
     id("io.spring.dependency-management") apply false
@@ -86,6 +91,7 @@ subprojects {
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
     apply(plugin = "jacoco")
     apply(plugin = "maven-publish")
+    apply(plugin = "signing")
     apply(plugin = "org.jetbrains.dokka")
 
     val jacocoCoverageFile = "$buildDir/jacocoReports/test/jacocoTestReport.xml"
@@ -187,7 +193,48 @@ subprojects {
                 }
                 afterEvaluate {
                     artifact(sourcesJar)
+                    artifact(javadocJar)
                 }
+                pom {
+                    packaging = "jar"
+                    name.set(project.name)
+                    url.set(githubUrl)
+                    description.set("WE Node Client for Java/Kotlin")
+
+                    licenses {
+                        license {
+                            name.set("The Apache License, Version 2.0")
+                            url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                        }
+                    }
+
+                    scm {
+                        connection.set("scm:$githubUrl")
+                        developerConnection.set("scm:git@github.com:$gitHubProject.git")
+                        url.set(githubUrl)
+                    }
+
+                    developers {
+                        developer {
+                            id.set("kt3")
+                            name.set("Stepan Kashintsev")
+                            email.set("kpote3@gmail.com")
+                        }
+                        developer {
+                            id.set("bekirev")
+                            name.set("Artem Bekirev")
+                            email.set("abekirev@gmail.com")
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    signing {
+        afterEvaluate {
+            if (!project.version.toString().endsWith("SNAPSHOT")) {
+                sign(publishing.publications["mavenJava"])
             }
         }
     }
