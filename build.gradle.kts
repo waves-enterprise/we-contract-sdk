@@ -69,18 +69,19 @@ allprojects {
 
     repositories {
         mavenCentral()
-        maven {
-            name = "we-snapshots"
-            url = uri("https://artifacts.wavesenterprise.com/repository/maven-snapshots/")
-            mavenContent {
-                snapshotsOnly()
-            }
-            credentials {
-                username = weMavenUser
-                password = weMavenPassword
+        if (weMavenUser != null && weMavenPassword != null) {
+            maven {
+                name = "we-snapshots"
+                url = uri("https://artifacts.wavesenterprise.com/repository/maven-snapshots/")
+                mavenContent {
+                    snapshotsOnly()
+                }
+                credentials {
+                    username = weMavenUser
+                    password = weMavenPassword
+                }
             }
         }
-
     }
 }
 
