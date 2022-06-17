@@ -9,7 +9,7 @@ The methods which implement handling logic are marked with `@ContractInit` (for 
 
 - **we-contract-sdk-api.**
 Contains mainly interfaces and annotations for marking contract handlers and their methods. 
-hould be used directly by *-contract-api modules.
+Should be used directly by *-contract-api modules.
 - **we-contract-sdk-core.**
 Core processing contract transactions logic. 
 Transport and mapping is not implemented in core module and should be provided externally. 
@@ -128,7 +128,7 @@ Publish to registry used by WE Blockchain Node. For convenience there is a bash 
 ```
 
 #### 6. Sign and broadcast transactions for creating and invoking published contract
-Use will need `image` and `imageHash` of the published contract to create it.  
+You will need `image` and `imageHash` of the published contract to create it.  
 
 CreateContractTx example
 ```json
