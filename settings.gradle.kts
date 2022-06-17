@@ -8,6 +8,7 @@ pluginManagement {
     val palantirGitVersion: String by settings
     val jGitVerVersion: String by settings
     val protobufPluginVersion: String by settings
+    val dokkaVersion: String by settings
 
     plugins {
         kotlin("jvm") version kotlinVersion apply false
@@ -22,6 +23,7 @@ pluginManagement {
         id("jacoco")
         id("fr.brouillard.oss.gradle.jgitver") version jGitVerVersion
         id("com.google.protobuf") version protobufPluginVersion apply false
+        id("org.jetbrains.dokka") version dokkaVersion
     }
 
     repositories {

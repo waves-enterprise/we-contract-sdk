@@ -2,6 +2,7 @@ import io.gitlab.arturbosch.detekt.Detekt
 import io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
+import org.jetbrains.kotlin.gradle.plugin.statistics.ReportStatisticsToElasticSearch.password
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val kotlinVersion: String by project
@@ -29,6 +30,9 @@ val weNodeClientVersion: String by project
 val weMavenUser: String? by project
 val weMavenPassword: String? by project
 
+val sonaTypeMavenUser: String? by project
+val sonaTypeMavenPassword: String? by project
+
 val weMavenBasePath = "https://artifacts.wavesenterprise.com/repository/"
 val sonaTypeBasePath = "https://s01.oss.sonatype.org"
 
@@ -43,6 +47,7 @@ plugins {
     id("com.palantir.git-version") apply false
     id("com.gorylenko.gradle-git-properties") apply false
     id("fr.brouillard.oss.gradle.jgitver")
+    id("org.jetbrains.dokka")
     id("jacoco")
 }
 
@@ -81,6 +86,7 @@ subprojects {
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
     apply(plugin = "jacoco")
     apply(plugin = "maven-publish")
+    apply(plugin = "org.jetbrains.dokka")
 
     val jacocoCoverageFile = "$buildDir/jacocoReports/test/jacocoTestReport.xml"
 
@@ -125,7 +131,52 @@ subprojects {
         from(project.the<SourceSetContainer>()["main"].allSource)
     }
 
+    val dokkaJavadoc by tasks.getting(org.jetbrains.dokka.gradle.DokkaTask::class)
+    val javadocJar by tasks.creating(Jar::class) {
+        dependsOn(dokkaJavadoc)
+        group = JavaBasePlugin.DOCUMENTATION_GROUP
+        description = "Assembles javadoc JAR"
+        archiveClassifier.set("javadoc")
+        from(dokkaJavadoc.outputDirectory)
+    }
+
     publishing {
+        repositories {
+            if (weMavenUser != null && weMavenPassword != null) {
+                maven {
+                    name = "WE-artifacts"
+                    afterEvaluate {
+                        url = uri("$weMavenBasePath${
+                            if (project.version.toString()
+                                    .endsWith("-SNAPSHOT")
+                            ) "maven-snapshots" else "maven-releases"
+                        }")
+                    }
+                    credentials {
+                        username = weMavenUser
+                        password = weMavenPassword
+                    }
+                }
+            }
+
+            if (sonaTypeMavenPassword != null && sonaTypeMavenUser != null) {
+                maven {
+                    name = "SonaType-maven-central-staging"
+                    val releasesUrl = uri("$sonaTypeBasePath/service/local/staging/deploy/maven2/")
+                    afterEvaluate {
+                        url = if (version.toString()
+                                .endsWith("SNAPSHOT")
+                        ) throw kotlin.Exception("shouldn't publish snapshot") else releasesUrl
+                    }
+                    credentials {
+                        username = sonaTypeMavenUser
+                        password = sonaTypeMavenPassword
+                    }
+                }
+            }
+        }
+
+
         publications {
             create<MavenPublication>("mavenJava") {
                 from(components["java"])
