@@ -4,7 +4,7 @@ plugins {
     id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
-val weContractSdkVersion = "0.0.0-feature_wtch_41-SNAPSHOT"
+val weContractSdkVersion = "1.0.0"
 
 dependencies {
 

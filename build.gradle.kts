@@ -200,7 +200,7 @@ subprojects {
                     packaging = "jar"
                     name.set(project.name)
                     url.set(githubUrl)
-                    description.set("WE Node Client for Java/Kotlin")
+                    description.set("WE Contract SDK for Java/Kotlin")
 
                     licenses {
                         license {
@@ -222,9 +222,12 @@ subprojects {
                             email.set("kpote3@gmail.com")
                         }
                         developer {
-                            id.set("bekirev")
-                            name.set("Artem Bekirev")
-                            email.set("abekirev@gmail.com")
+                            id.set("execc")
+                            name.set("Denis Vasin")
+                        }
+                        developer {
+                            id.set("Ivan-kind")
+                            name.set("Ivan Vorgul")
                         }
                     }
                 }

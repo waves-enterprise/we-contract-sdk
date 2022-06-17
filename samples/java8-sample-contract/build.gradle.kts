@@ -4,7 +4,7 @@ plugins {
     id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
-val weContractSdkVersion = "0.0.11-75cbce0f-feature_wtch_41-SNAPSHOT"
+val weContractSdkVersion = "1.0.0"
 
 dependencies {
     implementation("com.wavesenterprise:we-contract-sdk-grpc:$weContractSdkVersion")
