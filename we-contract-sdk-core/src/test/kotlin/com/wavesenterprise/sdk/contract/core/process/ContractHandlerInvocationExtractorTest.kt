@@ -44,6 +44,22 @@ internal class ContractHandlerInvocationExtractorTest {
     }
 
     @Test
+    fun `should extract init method for CreateContractTx in contractWithInterface`() {
+        every {
+            createContractTx.params
+        } returns listOf(
+            DataEntry(
+                key = DataKey("action"),
+                value = DataValue.StringDataValue("createContract")
+            )
+        )
+
+        val invocationExtractor = ContractHandlerInvocationExtractor(ContractHandlerWithInterface::class.java)
+        val extractedMethod = invocationExtractor.extractMethod(createContractTx)
+        assertEquals(InterfaceForContractHandler::createContract.javaMethod, extractedMethod)
+    }
+
+    @Test
     fun `should extract customNamed init method for CreateContractTx`() {
         every {
             createContractTx.params
@@ -145,4 +161,24 @@ class TestContractHandler {
 
     fun someNotAnnotatedMethod() {
     }
+}
+
+class ContractHandlerWithInterface : InterfaceForContractHandler {
+    override fun createContract() {
+        TODO("Not yet implemented")
+    }
+
+    override fun doAction() {
+        TODO("Not yet implemented")
+    }
+}
+
+@ContractHandler
+interface InterfaceForContractHandler {
+
+    @ContractInit
+    fun createContract()
+
+    @ContractAction
+    fun doAction()
 }
