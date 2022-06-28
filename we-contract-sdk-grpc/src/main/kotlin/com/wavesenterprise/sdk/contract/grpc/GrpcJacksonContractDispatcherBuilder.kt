@@ -2,6 +2,7 @@ package com.wavesenterprise.sdk.contract.grpc
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.wavesenterprise.sdk.contract.api.domain.ContractConcurrency
+import com.wavesenterprise.sdk.contract.api.domain.toThreadCount
 import com.wavesenterprise.sdk.contract.api.state.NodeContractStateValuesProvider
 import com.wavesenterprise.sdk.contract.core.dispatch.ContractDispatcher
 import com.wavesenterprise.sdk.contract.core.state.ContractStateFactory
@@ -127,7 +128,7 @@ class GrpcJacksonContractDispatcherBuilder {
 
     private fun defaultExecutor(actualContractConcurrency: ContractConcurrency): Executor =
         Executors.newFixedThreadPool(
-            Runtime.getRuntime().availableProcessors() * actualContractConcurrency.asyncMultiplier
+            actualContractConcurrency.toThreadCount(Runtime.getRuntime().availableProcessors())
         )
 
     private fun defaultObjectMapper(): ObjectMapper = ObjectMapper()

@@ -6,6 +6,7 @@ dependencies {
     api(project(":we-contract-sdk-api"))
     api("com.wavesenterprise:we-node-client-blocking-client")
     implementation("ch.qos.logback:logback-classic")
+    implementation("org.apache.commons:commons-lang3")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api")
     testImplementation("org.junit.jupiter:junit-jupiter-params")
