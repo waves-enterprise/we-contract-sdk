@@ -2,9 +2,7 @@ import io.gitlab.arturbosch.detekt.Detekt
 import io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
-import org.jetbrains.kotlin.gradle.plugin.statistics.ReportStatisticsToElasticSearch.password
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import kotlin.math.sign
 
 val kotlinVersion: String by project
 val kotlinCoroutinesVersion: String by project
@@ -15,6 +13,7 @@ val jacocoToolVersion: String by project
 val logbackVersion: String by project
 val sl4jExtVersion: String by project
 val javaxAnnotationApiVersion: String by project
+val commonsLangVersion: String by project
 
 val ioGrpcVersion: String by project
 val ioGrpcKotlinVersion: String by project
@@ -44,6 +43,7 @@ plugins {
     kotlin("jvm") apply false
     `maven-publish`
     signing
+    id("io.codearte.nexus-staging")
     kotlin("plugin.spring") apply false
     id("org.springframework.boot") apply false
     id("io.spring.dependency-management") apply false
@@ -83,6 +83,13 @@ allprojects {
             }
         }
     }
+}
+
+
+nexusStaging {
+    serverUrl = "$sonaTypeBasePath/service/local/"
+    username = sonaTypeMavenUser
+    password = sonaTypeMavenPassword
 }
 
 subprojects {
@@ -271,6 +278,7 @@ subprojects {
             dependency("io.grpc:grpc-kotlin-stub:$ioGrpcKotlinVersion")
 
             dependency("ch.qos.logback:logback-classic:$logbackVersion")
+            dependency("org.apache.commons:commons-lang3:$commonsLangVersion")
 
             dependency("io.ktor:ktor-client-core:$ktorVersion")
             dependency("io.ktor:ktor-client-cio:$ktorVersion")

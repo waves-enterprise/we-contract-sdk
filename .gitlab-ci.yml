@@ -46,18 +46,24 @@ tests&build:
   extends:
     - .test-gradle
   script:
-    - mkdir -p $HOME/.docker
-    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"auth\":\"$(echo -n $CI_REGISTRY_USER:$CI_REGISTRY_PASSWORD | base64)\"}}}" > $HOME/.docker/config.json      
-    - ./gradlew -PweMavenUser=$MAVEN_USER -PweMavenPassword=$MAVEN_PASSWORD version
     - ./gradlew -PweMavenUser=$MAVEN_USER -PweMavenPassword=$MAVEN_PASSWORD version check build publish
-    - docker images --format "{{json . }}" --no-trunc > images.json    
   only:
     - dev
     - /^.*rc.*$/
     - /^.*release.*$/    
     - /^.*hotfix.*$/
+  <<: *artifacts
+
+tests&build_for_maven_central:
+  extends:
+    - .test-gradle
+  script:
+    - cat $we_maven_central_gpg | base64 --decode > "$(pwd)/we_maven_central.gpg"
+    - ./gradlew --no-parallel -PsonaTypeMavenUser=$SONATYPE_USER -PsonaTypeMavenPassword=$SONATYPE_PASSWORD -Psigning.keyId=$SIGN_KEY_ID -Psigning.password=$SIGN_PASSWORD -Psigning.secretKeyRingFile="$(pwd)/we_maven_central.gpg" version check build publish
+    - ./gradlew -PsonaTypeMavenUser=$SONATYPE_USER -PsonaTypeMavenPassword=$SONATYPE_PASSWORD closeAndReleaseRepository
+  only:
     - master
-  <<: *artifacts 
+  <<: *artifacts
 
 tests-mr:
   extends:

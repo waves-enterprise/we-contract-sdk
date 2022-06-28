@@ -4,10 +4,12 @@ import com.wavesenterprise.sdk.contract.api.annotation.ContractAction
 import com.wavesenterprise.sdk.contract.api.annotation.ContractHandler
 import com.wavesenterprise.sdk.contract.api.annotation.ContractInit
 import com.wavesenterprise.sdk.contract.api.domain.ContractKeys
+import com.wavesenterprise.sdk.contract.core.reflection.AnnotationUtils
 import com.wavesenterprise.sdk.node.domain.DataValue
 import com.wavesenterprise.sdk.node.domain.contract.CallContractTransaction
 import com.wavesenterprise.sdk.node.domain.contract.ContractTransaction
 import com.wavesenterprise.sdk.node.domain.contract.CreateContractTransaction
+import org.apache.commons.lang3.reflect.MethodUtils
 import java.lang.reflect.Method
 
 class ContractHandlerInvocationExtractor<T>(
@@ -18,16 +20,29 @@ class ContractHandlerInvocationExtractor<T>(
     private val actionMethodByNameMap: Map<String, Method>
 
     init {
-        requireNotNull(contractHandlerType.getAnnotation(ContractHandler::class.java)) {
+
+        requireNotNull(AnnotationUtils.findAnnotation(contractHandlerType, ContractHandler::class.java)) {
             "Class ${contractHandlerType.canonicalName} doesn't have @ContractHandler annotation on it"
         }
         val initMethods: MutableList<Pair<String, Method>> = mutableListOf()
         val actionMethods: MutableList<Pair<String, Method>> = mutableListOf()
-        contractHandlerType.methods.forEach { method ->
-            method.getAnnotation(ContractInit::class.java)?.also {
+        MethodUtils.getMethodsListWithAnnotation(
+            contractHandlerType,
+            ContractInit::class.java,
+            true,
+            false
+        ).forEach { method ->
+            method.getDeclaredAnnotation(ContractInit::class.java)?.also {
                 initMethods.add(it.name.ifBlank { method.name } to method)
             }
-            method.getAnnotation(ContractAction::class.java)?.also {
+        }
+        MethodUtils.getMethodsListWithAnnotation(
+            contractHandlerType,
+            ContractAction::class.java,
+            true,
+            false
+        ).forEach { method ->
+            method.getDeclaredAnnotation(ContractAction::class.java)?.also {
                 actionMethods.add(it.name.ifBlank { method.name } to method)
             }
         }
