@@ -58,7 +58,8 @@ tests&build_for_maven_central:
   extends:
     - .test-gradle
   script:
-    - ./gradlew -PsonaTypeMavenUser=$SONATYPE_USER -PsonaTypeMavenPassword=$SONATYPE_PASSWORD -Psigning.keyId=$SIGN_KEY_ID -Psigning.password=$SIGN_PASSWORD -Psigning.secretKeyRingFile=$SIGN_SECRET_FILE version check build publish --Dorg.gradle.parallel=false
+    - cat $we_maven_central_gpg | base64 --decode > "$(pwd)/we_maven_central.gpg"
+    - ./gradlew --no-parallel -PsonaTypeMavenUser=$SONATYPE_USER -PsonaTypeMavenPassword=$SONATYPE_PASSWORD -Psigning.keyId=$SIGN_KEY_ID -Psigning.password=$SIGN_PASSWORD -Psigning.secretKeyRingFile="$(pwd)/we_maven_central.gpg" version check build publish
   only:
     - master
   <<: *artifacts
