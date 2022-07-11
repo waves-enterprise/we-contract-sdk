@@ -2,7 +2,8 @@ FROM fabric8/java-alpine-openjdk11-jre
 MAINTAINER Waves Enterprise <>
 
 ENV JAVA_MEM="-Xmx256M"
-ENV JAVA_OPTS=""
+# Note additional java options for io.grpc to work ok with jdk11+ (maybe should be fixed by upgrading io.grpc)
+ENV JAVA_OPTS="--add-opens java.base/jdk.internal.misc=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED -Dio.netty.tryReflectionSetAccessible=true "
 
 ADD build/libs/*-all.jar app.jar
 
