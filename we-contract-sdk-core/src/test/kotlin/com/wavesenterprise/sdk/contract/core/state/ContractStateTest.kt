@@ -17,6 +17,7 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.spyk
 import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -178,6 +179,35 @@ internal class ContractStateTest {
         }
 
         verify { mappingMapForState[any()] }
+    }
+
+    @Test
+    fun `should check hasAll for mapping`() {
+        val mappingPrefix = "MY_DOMAIN_OBJECT"
+        val objectId = "someDomainObjectId"
+        val otherObjectId = "someOtherDomainObjectId"
+        val notFoundObjectId = "anotherOneNotFoundObjectId"
+        val someDomainObj = SomeDomainObject()
+        val someOtherDomainObj = SomeDomainObject().copy(name = "other")
+        every {
+            contractToDataValueConverter.convert(someDomainObj)
+        } returns DataValue.StringDataValue(someDomainObj.toString())
+        every {
+            contractToDataValueConverter.convert(someOtherDomainObj)
+        } returns DataValue.StringDataValue(someOtherDomainObj.toString())
+        every {
+            contractFromDataEntryConverter.convert(any(), SomeDomainObject::class.java)
+        } returns SomeDomainObject()
+        every {
+            nodeContractStateValuesProvider.getForKeys(any(), setOf(mappingPrefix + "_" + notFoundObjectId))
+        } returns emptyList()
+
+        val mapping = contractState.getMapping(SomeDomainObject::class.java, mappingPrefix)
+        mapping.put(objectId, someDomainObj)
+        mapping.put(otherObjectId, someOtherDomainObj)
+
+        assertTrue(mapping.hasAll(setOf(objectId, otherObjectId)))
+        assertFalse(mapping.hasAll(setOf(objectId, otherObjectId, notFoundObjectId)))
     }
 }
 

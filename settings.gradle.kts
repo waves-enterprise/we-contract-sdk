@@ -38,4 +38,8 @@ include(
     "we-contract-sdk-api",
     "we-contract-sdk-core",
     "we-contract-sdk-grpc",
+    "we-contract-sdk-jackson",
+    "we-contract-sdk-test",
+
+    ":we-contract-sdk-client:we-contract-sdk-blocking-client"
 )
