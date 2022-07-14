@@ -4,6 +4,8 @@ import com.wavesenterprise.sdk.contract.api.state.ContractFromDataEntryConverter
 import com.wavesenterprise.sdk.contract.api.state.ContractState
 import com.wavesenterprise.sdk.contract.api.state.ContractToDataValueConverter
 import com.wavesenterprise.sdk.contract.api.state.NodeContractStateValuesProvider
+import com.wavesenterprise.sdk.contract.api.state.mapping.Mapping
+import com.wavesenterprise.sdk.contract.core.state.mapping.MappingCacheKey
 import com.wavesenterprise.sdk.node.domain.DataEntry
 import com.wavesenterprise.sdk.node.domain.DataKey
 import com.wavesenterprise.sdk.node.domain.DataValue
@@ -11,6 +13,7 @@ import com.wavesenterprise.sdk.node.domain.contract.ContractId
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.spyk
 import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -31,6 +34,8 @@ internal class ContractStateTest {
     @MockK
     lateinit var contractToDataValueConverter: ContractToDataValueConverter
 
+    private val mappingMapForState: MutableMap<MappingCacheKey, Mapping<*>> = spyk(hashMapOf())
+
     private lateinit var contractState: ContractState
 
     private val backingMapForState: MutableMap<String, DataEntry> = hashMapOf()
@@ -43,12 +48,13 @@ internal class ContractStateTest {
             contractId = contractId,
             nodeContractStateValuesProvider = nodeContractStateValuesProvider,
             contractFromDataEntryConverter = contractFromDataEntryConverter,
-            backingMap = backingMapForState
+            backingMap = backingMapForState,
         )
         contractState = ContractStateImpl(
             contractStateReader = contractStateReader,
             contractToDataValueConverter = contractToDataValueConverter,
-            backingMap = backingMapForState
+            backingMap = backingMapForState,
+            mappingMap = mappingMapForState,
         )
     }
 
@@ -147,6 +153,27 @@ internal class ContractStateTest {
             contractToDataValueConverter.convert(someDomainObj)
             contractFromDataEntryConverter.convert(any(), SomeDomainObject::class.java)
         }
+    }
+
+    @Test
+    fun `should use cache of mapping map`() {
+        val mappingPrefix = "MY_DOMAIN_OBJECT"
+        val someDomainObj = SomeDomainObject()
+        val callGetMappingCount = 2
+
+        every {
+            contractToDataValueConverter.convert(someDomainObj)
+        } returns DataValue.StringDataValue(someDomainObj.toString())
+        every {
+            contractFromDataEntryConverter.convert(any(), SomeDomainObject::class.java)
+        } returns SomeDomainObject()
+        every { mappingMapForState[any()] } returns null
+        every { mappingMapForState.put(any(), any()) } returns null
+        repeat(callGetMappingCount) {
+            contractState.getMapping(SomeDomainObject::class.java, mappingPrefix)
+        }
+
+        verify { mappingMapForState[any()] }
     }
 }
 

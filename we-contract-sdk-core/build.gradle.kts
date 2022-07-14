@@ -7,6 +7,7 @@ dependencies {
     api("com.wavesenterprise:we-node-client-blocking-client")
     implementation("ch.qos.logback:logback-classic")
     implementation("org.apache.commons:commons-lang3")
+    implementation("com.fasterxml.jackson.core:jackson-core:2.13.3")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api")
     testImplementation("org.junit.jupiter:junit-jupiter-params")
