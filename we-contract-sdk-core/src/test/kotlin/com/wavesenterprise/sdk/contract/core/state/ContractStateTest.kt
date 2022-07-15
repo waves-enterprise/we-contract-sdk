@@ -4,6 +4,7 @@ import com.wavesenterprise.sdk.contract.api.state.ContractFromDataEntryConverter
 import com.wavesenterprise.sdk.contract.api.state.ContractState
 import com.wavesenterprise.sdk.contract.api.state.ContractToDataValueConverter
 import com.wavesenterprise.sdk.contract.api.state.NodeContractStateValuesProvider
+import com.wavesenterprise.sdk.contract.api.state.TypeReference
 import com.wavesenterprise.sdk.contract.api.state.mapping.Mapping
 import com.wavesenterprise.sdk.contract.core.state.mapping.MappingCacheKey
 import com.wavesenterprise.sdk.node.domain.DataEntry
@@ -156,21 +157,24 @@ internal class ContractStateTest {
     }
 
     @Test
-    fun `should use cache of mapping map`() {
+    fun `should use cache of mapping map with key as Class`() {
         val mappingPrefix = "MY_DOMAIN_OBJECT"
-        val someDomainObj = SomeDomainObject()
         val callGetMappingCount = 2
 
-        every {
-            contractToDataValueConverter.convert(someDomainObj)
-        } returns DataValue.StringDataValue(someDomainObj.toString())
-        every {
-            contractFromDataEntryConverter.convert(any(), SomeDomainObject::class.java)
-        } returns SomeDomainObject()
-        every { mappingMapForState[any()] } returns null
-        every { mappingMapForState.put(any(), any()) } returns null
         repeat(callGetMappingCount) {
             contractState.getMapping(SomeDomainObject::class.java, mappingPrefix)
+        }
+
+        verify { mappingMapForState[any()] }
+    }
+
+    @Test
+    fun `should use cache of mapping map with key as TypeReference`() {
+        val mappingPrefix = "MY_DOMAIN_OBJECT"
+        val callGetMappingCount = 2
+
+        repeat(callGetMappingCount) {
+            contractState.getMapping(object : TypeReference<SomeDomainObject>() {}, mappingPrefix)
         }
 
         verify { mappingMapForState[any()] }
