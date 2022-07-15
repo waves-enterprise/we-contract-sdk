@@ -39,7 +39,7 @@ class ContractStateImpl(
     }
 
     override fun <T> getMapping(type: Class<T>, vararg prefix: String): Mapping<T> {
-        val cacheKey = ClassMappingCacheKey(clazz = type, prefix = arrayOf(*prefix))
+        val cacheKey = ClassMappingCacheKey(clazz = type, prefix = prefix.toList())
         val result = mappingMap[cacheKey]
         return if (result != null) {
             result as Mapping<T>
@@ -57,7 +57,7 @@ class ContractStateImpl(
     }
 
     override fun <T> getMapping(typeReference: TypeReference<T>, vararg prefix: String): Mapping<T> {
-        val cacheKey = TypeMappingCacheKey(reference = typeReference, prefix = arrayOf(*prefix))
+        val cacheKey = TypeMappingCacheKey(reference = typeReference, prefix = prefix.toList())
         val result = mappingMap[cacheKey]
         return if (result != null) {
             result as Mapping<T>
