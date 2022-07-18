@@ -3,6 +3,7 @@ package com.wavesenterprise.sdk.contract.grpc.jackson
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.wavesenterprise.sdk.contract.api.state.ContractToDataValueConverter
+import com.wavesenterprise.sdk.contract.jackson.JacksonContractToDataValueConverter
 import com.wavesenterprise.sdk.node.domain.DataValue
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue

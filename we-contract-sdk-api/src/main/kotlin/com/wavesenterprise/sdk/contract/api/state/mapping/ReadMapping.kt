@@ -35,4 +35,12 @@ interface ReadMapping<T> {
      * @return true if value exists
      */
     fun has(key: String): Boolean = tryGet(key).isPresent
+
+    /**
+     * Checks all values are present in mapping
+     *
+     * @param key
+     * @return true if value exists
+     */
+    fun hasAll(keys: Set<String>): Boolean = getAll(keys).run { entries.size == keys.distinct().size }
 }

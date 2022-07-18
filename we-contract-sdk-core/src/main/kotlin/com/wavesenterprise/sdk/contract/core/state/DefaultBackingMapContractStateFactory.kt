@@ -4,6 +4,8 @@ import com.wavesenterprise.sdk.contract.api.state.ContractFromDataEntryConverter
 import com.wavesenterprise.sdk.contract.api.state.ContractState
 import com.wavesenterprise.sdk.contract.api.state.ContractToDataValueConverter
 import com.wavesenterprise.sdk.contract.api.state.NodeContractStateValuesProvider
+import com.wavesenterprise.sdk.contract.api.state.mapping.Mapping
+import com.wavesenterprise.sdk.contract.core.state.mapping.MappingCacheKey
 import com.wavesenterprise.sdk.node.domain.DataEntry
 import com.wavesenterprise.sdk.node.domain.contract.ContractId
 
@@ -15,16 +17,18 @@ class DefaultBackingMapContractStateFactory(
 
     override fun buildContractState(contractId: ContractId): ContractState {
         val backingMapForState: MutableMap<String, DataEntry> = hashMapOf()
+        val mappingMapForState: MutableMap<MappingCacheKey, Mapping<*>> = hashMapOf()
         val contractStateReader = ContractStateReaderIml(
             contractId = contractId,
             nodeContractStateValuesProvider = nodeContractStateValuesProvider,
             contractFromDataEntryConverter = contractFromDataEntryConverter,
-            backingMap = backingMapForState
+            backingMap = backingMapForState,
         )
         return ContractStateImpl(
             contractStateReader = contractStateReader,
             contractToDataValueConverter = contractToDataValueConverter,
-            backingMap = backingMapForState
+            backingMap = backingMapForState,
+            mappingMap = mappingMapForState,
         )
     }
 }

@@ -4,6 +4,9 @@ import com.wavesenterprise.sdk.contract.api.state.ContractFromDataEntryConverter
 import com.wavesenterprise.sdk.contract.api.state.ContractState
 import com.wavesenterprise.sdk.contract.api.state.ContractToDataValueConverter
 import com.wavesenterprise.sdk.contract.api.state.NodeContractStateValuesProvider
+import com.wavesenterprise.sdk.contract.api.state.TypeReference
+import com.wavesenterprise.sdk.contract.api.state.mapping.Mapping
+import com.wavesenterprise.sdk.contract.core.state.mapping.MappingCacheKey
 import com.wavesenterprise.sdk.node.domain.DataEntry
 import com.wavesenterprise.sdk.node.domain.DataKey
 import com.wavesenterprise.sdk.node.domain.DataValue
@@ -11,8 +14,10 @@ import com.wavesenterprise.sdk.node.domain.contract.ContractId
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.spyk
 import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -31,6 +36,8 @@ internal class ContractStateTest {
     @MockK
     lateinit var contractToDataValueConverter: ContractToDataValueConverter
 
+    private val mappingMapForState: MutableMap<MappingCacheKey, Mapping<*>> = spyk(hashMapOf())
+
     private lateinit var contractState: ContractState
 
     private val backingMapForState: MutableMap<String, DataEntry> = hashMapOf()
@@ -43,12 +50,13 @@ internal class ContractStateTest {
             contractId = contractId,
             nodeContractStateValuesProvider = nodeContractStateValuesProvider,
             contractFromDataEntryConverter = contractFromDataEntryConverter,
-            backingMap = backingMapForState
+            backingMap = backingMapForState,
         )
         contractState = ContractStateImpl(
             contractStateReader = contractStateReader,
             contractToDataValueConverter = contractToDataValueConverter,
-            backingMap = backingMapForState
+            backingMap = backingMapForState,
+            mappingMap = mappingMapForState,
         )
     }
 
@@ -147,6 +155,59 @@ internal class ContractStateTest {
             contractToDataValueConverter.convert(someDomainObj)
             contractFromDataEntryConverter.convert(any(), SomeDomainObject::class.java)
         }
+    }
+
+    @Test
+    fun `should use cache of mapping map with key as Class`() {
+        val mappingPrefix = "MY_DOMAIN_OBJECT"
+        val callGetMappingCount = 2
+
+        repeat(callGetMappingCount) {
+            contractState.getMapping(SomeDomainObject::class.java, mappingPrefix)
+        }
+
+        verify { mappingMapForState[any()] }
+    }
+
+    @Test
+    fun `should use cache of mapping map with key as TypeReference`() {
+        val mappingPrefix = "MY_DOMAIN_OBJECT"
+        val callGetMappingCount = 2
+
+        repeat(callGetMappingCount) {
+            contractState.getMapping(object : TypeReference<SomeDomainObject>() {}, mappingPrefix)
+        }
+
+        verify { mappingMapForState[any()] }
+    }
+
+    @Test
+    fun `should check hasAll for mapping`() {
+        val mappingPrefix = "MY_DOMAIN_OBJECT"
+        val objectId = "someDomainObjectId"
+        val otherObjectId = "someOtherDomainObjectId"
+        val notFoundObjectId = "anotherOneNotFoundObjectId"
+        val someDomainObj = SomeDomainObject()
+        val someOtherDomainObj = SomeDomainObject().copy(name = "other")
+        every {
+            contractToDataValueConverter.convert(someDomainObj)
+        } returns DataValue.StringDataValue(someDomainObj.toString())
+        every {
+            contractToDataValueConverter.convert(someOtherDomainObj)
+        } returns DataValue.StringDataValue(someOtherDomainObj.toString())
+        every {
+            contractFromDataEntryConverter.convert(any(), SomeDomainObject::class.java)
+        } returns SomeDomainObject()
+        every {
+            nodeContractStateValuesProvider.getForKeys(any(), setOf(mappingPrefix + "_" + notFoundObjectId))
+        } returns emptyList()
+
+        val mapping = contractState.getMapping(SomeDomainObject::class.java, mappingPrefix)
+        mapping.put(objectId, someDomainObj)
+        mapping.put(otherObjectId, someOtherDomainObj)
+
+        assertTrue(mapping.hasAll(setOf(objectId, otherObjectId)))
+        assertFalse(mapping.hasAll(setOf(objectId, otherObjectId, notFoundObjectId)))
     }
 }
 
