@@ -1,6 +1,7 @@
-package my.sample.java17.contract;
+package my.sample.java17.contract.rockps;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.wavesenterprise.sdk.contract.core.dispatch.ContractDispatcher;
 import com.wavesenterprise.sdk.contract.grpc.GrpcJacksonContractDispatcherBuilder;
@@ -8,7 +9,7 @@ import com.wavesenterprise.sdk.contract.grpc.GrpcJacksonContractDispatcherBuilde
 public class MainDispatch {
     public static void main(String[] args) {
         ContractDispatcher contractDispatcher = GrpcJacksonContractDispatcherBuilder.builder()
-                .contractHandlerType(SampleContractHandler.class)
+                .contractHandlerType(RockPaperScissorsContractImpl.class)
                 .objectMapper(getObjectMapper())
                 .build();
 
@@ -16,8 +17,6 @@ public class MainDispatch {
     }
 
     private static ObjectMapper getObjectMapper() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        return objectMapper;
+        return JsonMapper.builder().addModule(new JavaTimeModule()).build();
     }
 }
