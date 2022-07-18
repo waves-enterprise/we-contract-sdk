@@ -43,6 +43,7 @@ plugins {
     kotlin("jvm") apply false
     `maven-publish`
     signing
+    id("io.codearte.nexus-staging")
     kotlin("plugin.spring") apply false
     id("org.springframework.boot") apply false
     id("io.spring.dependency-management") apply false
@@ -82,6 +83,13 @@ allprojects {
             }
         }
     }
+}
+
+
+nexusStaging {
+    serverUrl = "$sonaTypeBasePath/service/local/"
+    username = sonaTypeMavenUser
+    password = sonaTypeMavenPassword
 }
 
 subprojects {
