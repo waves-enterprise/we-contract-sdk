@@ -29,6 +29,8 @@ class DefaultBackingMapContractStateFactory(
             contractToDataValueConverter = contractToDataValueConverter,
             backingMap = backingMapForState,
             mappingMap = mappingMapForState,
+            contractFromDataValueConverter = contractFromDataEntryConverter,
+            nodeContractStateValuesProvider = nodeContractStateValuesProvider,
         )
     }
 }
