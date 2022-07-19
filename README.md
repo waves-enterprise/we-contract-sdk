@@ -13,9 +13,13 @@ Should be used directly by *-contract-api modules.
 - **we-contract-sdk-core.**
 Core processing contract transactions logic. 
 Transport and mapping is not implemented in core module and should be provided externally. 
+- **we-contract-sdk-jackson.**
+Jackson JSON mapping for values stored on state.  
 - **we-contract-sdk-grpc.**
 Implementation with GRPC transport and Jackson object mapping. 
 Should be used directly by the module which starts and runs the contract.
+- **we-contract-sdk-test.**
+Utils for contract unit testing. 
 
 ## Getting started
 
@@ -25,18 +29,18 @@ Should be used directly by the module which starts and runs the contract.
 <dependency>
   <groupId>com.wavesenterprise</groupId>
   <artifactId>we-contract-sdk-grpc</artifactId>
-  <version>1.0.0</version>
+  <version>1.1.0</version>
 </dependency>
 ```
 #### Gradle
 ```kotlin
 dependencies {
-    implementation("com.wavesenterprise:we-contract-sdk-grpc:1.0.0")
+    implementation("com.wavesenterprise:we-contract-sdk-grpc:1.1.0")
 } 
 ```
 
 ### Quick start
-All examples are taken from the [Samples](samples).
+Other examples can be found in [Samples](samples).
 #### 1. Create contract handler
 ```java
 @ContractHandler

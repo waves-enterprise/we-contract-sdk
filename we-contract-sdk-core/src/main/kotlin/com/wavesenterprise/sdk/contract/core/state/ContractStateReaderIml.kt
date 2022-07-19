@@ -80,9 +80,11 @@ class ContractStateReaderIml(
         entryMappingFn: (DataEntry) -> T
     ): Map<String, T> {
         val keysToBeRequested = keys.minus(backingMap.keys)
-        backingMap.putAll(
-            nodeContractStateValuesProvider.getForKeys(contractId, keysToBeRequested).map { it.key.value to it }
-        )
+        if (keysToBeRequested.isNotEmpty()) {
+            backingMap.putAll(
+                nodeContractStateValuesProvider.getForKeys(contractId, keysToBeRequested).map { it.key.value to it }
+            )
+        }
         return backingMap.entries
             .filter { keys.contains(it.key) }
             .associate { it.key to entryMappingFn(it.value) }

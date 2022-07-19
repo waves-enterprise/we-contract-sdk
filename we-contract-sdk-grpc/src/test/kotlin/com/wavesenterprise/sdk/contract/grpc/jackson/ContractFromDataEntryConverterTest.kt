@@ -2,6 +2,7 @@ package com.wavesenterprise.sdk.contract.grpc.jackson
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.wavesenterprise.sdk.contract.api.state.TypeReference
+import com.wavesenterprise.sdk.contract.jackson.JacksonFromDataEntryConverter
 import com.wavesenterprise.sdk.node.domain.DataEntry
 import com.wavesenterprise.sdk.node.domain.DataKey
 import com.wavesenterprise.sdk.node.domain.DataValue

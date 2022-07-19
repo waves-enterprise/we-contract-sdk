@@ -1,4 +1,4 @@
-package com.wavesenterprise.sdk.contract.grpc.jackson
+package com.wavesenterprise.sdk.contract.jackson
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.wavesenterprise.sdk.contract.api.state.ContractFromDataEntryConverter

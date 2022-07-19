@@ -14,9 +14,9 @@ import com.wavesenterprise.sdk.contract.grpc.connect.GrpcConnectionProperties
 import com.wavesenterprise.sdk.contract.grpc.connect.HeaderClientInterceptor
 import com.wavesenterprise.sdk.contract.grpc.connect.auth.AuthTokenSupplier
 import com.wavesenterprise.sdk.contract.grpc.connect.auth.ThreadLocalAuthTokenSupplier
-import com.wavesenterprise.sdk.contract.grpc.jackson.JacksonContractToDataValueConverter
-import com.wavesenterprise.sdk.contract.grpc.jackson.JacksonFromDataEntryConverter
 import com.wavesenterprise.sdk.contract.grpc.node.GrpcBlockingClientNodeContractStateValuesProvider
+import com.wavesenterprise.sdk.contract.jackson.JacksonContractToDataValueConverter
+import com.wavesenterprise.sdk.contract.jackson.JacksonFromDataEntryConverter
 import com.wavesenterprise.sdk.node.domain.blocking.contract.ContractService
 import com.wavesenterprise.sdk.node.domain.contract.AuthToken
 import com.wavesenterprise.sdk.node.domain.grpc.blocking.contract.ContractGrpcBlockingService

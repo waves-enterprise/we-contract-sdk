@@ -9,11 +9,13 @@ pluginManagement {
     val jGitVerVersion: String by settings
     val protobufPluginVersion: String by settings
     val dokkaVersion: String by settings
+    val nexusStagingVersion: String by settings
 
     plugins {
         kotlin("jvm") version kotlinVersion apply false
         kotlin("plugin.spring") version kotlinVersion apply false
         `maven-publish`
+        id("io.codearte.nexus-staging") version nexusStagingVersion apply false
         id("org.springframework.boot") version springBootVersion apply false
         id("io.spring.dependency-management") version gradleDependencyManagementVersion apply false
         id("io.gitlab.arturbosch.detekt") version detektVersion apply false
@@ -38,4 +40,8 @@ include(
     "we-contract-sdk-api",
     "we-contract-sdk-core",
     "we-contract-sdk-grpc",
+    "we-contract-sdk-jackson",
+    "we-contract-sdk-test",
+
+    ":we-contract-sdk-client:we-contract-sdk-blocking-client"
 )
