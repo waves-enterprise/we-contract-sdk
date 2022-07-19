@@ -7,6 +7,7 @@ import com.wavesenterprise.sdk.contract.api.state.ContractToDataValueConverter
 import com.wavesenterprise.sdk.contract.api.state.NodeContractStateValuesProvider
 import com.wavesenterprise.sdk.contract.api.state.TypeReference
 import com.wavesenterprise.sdk.contract.api.state.mapping.Mapping
+import com.wavesenterprise.sdk.contract.core.state.factory.ExternalContractStateFactory
 import com.wavesenterprise.sdk.contract.core.state.mapping.ClassMappingCacheKey
 import com.wavesenterprise.sdk.contract.core.state.mapping.MappingCacheKey
 import com.wavesenterprise.sdk.contract.core.state.mapping.MappingImpl
@@ -44,11 +45,10 @@ class ContractStateImpl(
     }
 
     override fun external(contractId: ContractId) =
-        ContractStateReaderIml(
-            contractId = contractId,
-            nodeContractStateValuesProvider = nodeContractStateValuesProvider,
-            contractFromDataEntryConverter = contractFromDataValueConverter,
-        )
+        ExternalContractStateFactory(
+            nodeContractStateValuesProvider,
+            contractFromDataValueConverter,
+        ).buildContractState(contractId)
 
     override fun <T> getMapping(type: Class<T>, vararg prefix: String): Mapping<T> {
         val cacheKey = ClassMappingCacheKey(clazz = type, prefix = prefix.toList())
