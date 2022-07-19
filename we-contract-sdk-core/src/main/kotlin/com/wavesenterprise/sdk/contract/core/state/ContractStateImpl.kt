@@ -1,8 +1,10 @@
 package com.wavesenterprise.sdk.contract.core.state
 
+import com.wavesenterprise.sdk.contract.api.state.ContractFromDataEntryConverter
 import com.wavesenterprise.sdk.contract.api.state.ContractState
 import com.wavesenterprise.sdk.contract.api.state.ContractStateReader
 import com.wavesenterprise.sdk.contract.api.state.ContractToDataValueConverter
+import com.wavesenterprise.sdk.contract.api.state.NodeContractStateValuesProvider
 import com.wavesenterprise.sdk.contract.api.state.TypeReference
 import com.wavesenterprise.sdk.contract.api.state.mapping.Mapping
 import com.wavesenterprise.sdk.contract.core.state.mapping.ClassMappingCacheKey
@@ -13,12 +15,15 @@ import com.wavesenterprise.sdk.contract.core.state.mapping.TypeMappingCacheKey
 import com.wavesenterprise.sdk.contract.core.state.mapping.WriteMappingImpl
 import com.wavesenterprise.sdk.node.domain.DataEntry
 import com.wavesenterprise.sdk.node.domain.DataKey
+import com.wavesenterprise.sdk.node.domain.contract.ContractId
 
 class ContractStateImpl(
     private val contractStateReader: ContractStateReader,
     private val contractToDataValueConverter: ContractToDataValueConverter,
+    private val contractFromDataValueConverter: ContractFromDataEntryConverter,
     private val backingMap: MutableMap<String, DataEntry>,
     private val mappingMap: MutableMap<MappingCacheKey, Mapping<*>>,
+    private val nodeContractStateValuesProvider: NodeContractStateValuesProvider,
 ) : ContractStateReader by contractStateReader, ContractState {
 
     private val executionResultMap: MutableMap<String, DataEntry> = hashMapOf()
@@ -36,6 +41,14 @@ class ContractStateImpl(
             executionResultMap[key] = it
             backingMap[key] = it
         }
+    }
+
+    override fun external(contractId: ContractId): ContractStateReader {
+        return ContractStateReaderIml(
+            contractId = contractId,
+            nodeContractStateValuesProvider = nodeContractStateValuesProvider,
+            contractFromDataEntryConverter = contractFromDataValueConverter,
+        )
     }
 
     override fun <T> getMapping(type: Class<T>, vararg prefix: String): Mapping<T> {

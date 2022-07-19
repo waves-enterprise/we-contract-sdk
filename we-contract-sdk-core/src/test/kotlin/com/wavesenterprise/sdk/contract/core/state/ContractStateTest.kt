@@ -56,6 +56,8 @@ internal class ContractStateTest {
             contractToDataValueConverter = contractToDataValueConverter,
             backingMap = backingMapForState,
             mappingMap = mappingMapForState,
+            contractFromDataValueConverter = contractFromDataEntryConverter,
+            nodeContractStateValuesProvider = nodeContractStateValuesProvider,
         )
     }
 
