@@ -43,13 +43,12 @@ class ContractStateImpl(
         }
     }
 
-    override fun external(contractId: ContractId): ContractStateReader {
-        return ContractStateReaderIml(
+    override fun external(contractId: ContractId) =
+        ContractStateReaderIml(
             contractId = contractId,
             nodeContractStateValuesProvider = nodeContractStateValuesProvider,
             contractFromDataEntryConverter = contractFromDataValueConverter,
         )
-    }
 
     override fun <T> getMapping(type: Class<T>, vararg prefix: String): Mapping<T> {
         val cacheKey = ClassMappingCacheKey(clazz = type, prefix = prefix.toList())
