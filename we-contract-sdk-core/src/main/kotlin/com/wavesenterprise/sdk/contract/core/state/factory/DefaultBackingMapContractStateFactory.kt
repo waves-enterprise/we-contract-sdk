@@ -26,13 +26,16 @@ class DefaultBackingMapContractStateFactory(
             contractFromDataEntryConverter = contractFromDataEntryConverter,
             backingMap = backingMapForState,
         )
+        val contractStateReaderFactory = ExternalContractStateFactory(
+            contractFromDataEntryConverter = contractFromDataEntryConverter,
+            nodeContractStateValuesProvider = nodeContractStateValuesProvider,
+        )
         return ContractStateImpl(
             contractStateReader = contractStateReader,
             contractToDataValueConverter = contractToDataValueConverter,
             backingMap = backingMapForState,
             mappingMap = mappingMapForState,
-            contractFromDataValueConverter = contractFromDataEntryConverter,
-            nodeContractStateValuesProvider = nodeContractStateValuesProvider,
+            contractStateReaderFactory = contractStateReaderFactory,
         )
     }
 }

@@ -6,6 +6,7 @@ import com.wavesenterprise.sdk.contract.api.state.ContractToDataValueConverter
 import com.wavesenterprise.sdk.contract.api.state.NodeContractStateValuesProvider
 import com.wavesenterprise.sdk.contract.api.state.TypeReference
 import com.wavesenterprise.sdk.contract.api.state.mapping.Mapping
+import com.wavesenterprise.sdk.contract.core.state.factory.ExternalContractStateFactory
 import com.wavesenterprise.sdk.contract.core.state.mapping.MappingCacheKey
 import com.wavesenterprise.sdk.contract.core.utils.contractId
 import com.wavesenterprise.sdk.contract.core.utils.dataEntry
@@ -18,7 +19,6 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.spyk
 import io.mockk.verify
-import org.apache.commons.lang3.StringUtils
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -56,13 +56,16 @@ internal class ContractStateTest {
             contractFromDataEntryConverter = contractFromDataEntryConverter,
             backingMap = backingMapForState,
         )
+        val contractStateReaderFactory = ExternalContractStateFactory(
+            contractFromDataEntryConverter = contractFromDataEntryConverter,
+            nodeContractStateValuesProvider = nodeContractStateValuesProvider,
+        )
         contractState = ContractStateImpl(
             contractStateReader = contractStateReader,
             contractToDataValueConverter = contractToDataValueConverter,
             backingMap = backingMapForState,
             mappingMap = mappingMapForState,
-            contractFromDataValueConverter = contractFromDataEntryConverter,
-            nodeContractStateValuesProvider = nodeContractStateValuesProvider,
+            contractStateReaderFactory = contractStateReaderFactory,
         )
     }
 
@@ -165,7 +168,7 @@ internal class ContractStateTest {
 
     @Test
     fun `should throw exception when length of key more than limit`() {
-        val longKey = StringUtils.repeat("k", MAX_KEY_LENGTH + 1)
+        val longKey = "k".repeat(MAX_KEY_LENGTH + 1)
         assertThrows<IllegalArgumentException> {
             contractState.put(longKey, SomeDomainObject())
         }.apply {
