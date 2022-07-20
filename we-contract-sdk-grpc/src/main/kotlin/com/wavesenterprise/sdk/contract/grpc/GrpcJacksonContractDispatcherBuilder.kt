@@ -5,8 +5,8 @@ import com.wavesenterprise.sdk.contract.api.domain.ContractConcurrency
 import com.wavesenterprise.sdk.contract.api.domain.toThreadCount
 import com.wavesenterprise.sdk.contract.api.state.NodeContractStateValuesProvider
 import com.wavesenterprise.sdk.contract.core.dispatch.ContractDispatcher
-import com.wavesenterprise.sdk.contract.core.state.ContractStateFactory
-import com.wavesenterprise.sdk.contract.core.state.DefaultBackingMapContractStateFactory
+import com.wavesenterprise.sdk.contract.core.state.factory.ContractStateFactory
+import com.wavesenterprise.sdk.contract.core.state.factory.DefaultBackingMapContractStateFactory
 import com.wavesenterprise.sdk.contract.grpc.connect.DefaultGrpcChannelProvider
 import com.wavesenterprise.sdk.contract.grpc.connect.EnvGrpcConnectionProperties
 import com.wavesenterprise.sdk.contract.grpc.connect.GrpcChannelProvider

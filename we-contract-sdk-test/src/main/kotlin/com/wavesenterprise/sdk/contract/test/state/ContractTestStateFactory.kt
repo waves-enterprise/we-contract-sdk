@@ -2,7 +2,7 @@ package com.wavesenterprise.sdk.contract.test.state
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.wavesenterprise.sdk.contract.api.state.ContractState
-import com.wavesenterprise.sdk.contract.core.state.DefaultBackingMapContractStateFactory
+import com.wavesenterprise.sdk.contract.core.state.factory.DefaultBackingMapContractStateFactory
 import com.wavesenterprise.sdk.contract.jackson.JacksonContractToDataValueConverter
 import com.wavesenterprise.sdk.contract.jackson.JacksonFromDataEntryConverter
 import com.wavesenterprise.sdk.contract.test.NoOpNodeValuesProvider

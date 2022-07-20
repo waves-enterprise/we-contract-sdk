@@ -6,7 +6,10 @@ import com.wavesenterprise.sdk.contract.api.state.ContractToDataValueConverter
 import com.wavesenterprise.sdk.contract.api.state.NodeContractStateValuesProvider
 import com.wavesenterprise.sdk.contract.api.state.TypeReference
 import com.wavesenterprise.sdk.contract.api.state.mapping.Mapping
+import com.wavesenterprise.sdk.contract.core.state.factory.ExternalContractStateFactory
 import com.wavesenterprise.sdk.contract.core.state.mapping.MappingCacheKey
+import com.wavesenterprise.sdk.contract.core.utils.contractId
+import com.wavesenterprise.sdk.contract.core.utils.dataEntry
 import com.wavesenterprise.sdk.node.domain.DataEntry
 import com.wavesenterprise.sdk.node.domain.DataKey
 import com.wavesenterprise.sdk.node.domain.DataValue
@@ -21,6 +24,7 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import java.util.Optional
 
@@ -52,11 +56,16 @@ internal class ContractStateTest {
             contractFromDataEntryConverter = contractFromDataEntryConverter,
             backingMap = backingMapForState,
         )
+        val contractStateReaderFactory = ExternalContractStateFactory(
+            contractFromDataEntryConverter = contractFromDataEntryConverter,
+            nodeContractStateValuesProvider = nodeContractStateValuesProvider,
+        )
         contractState = ContractStateImpl(
             contractStateReader = contractStateReader,
             contractToDataValueConverter = contractToDataValueConverter,
             backingMap = backingMapForState,
             mappingMap = mappingMapForState,
+            contractStateReaderFactory = contractStateReaderFactory,
         )
     }
 
@@ -158,6 +167,19 @@ internal class ContractStateTest {
     }
 
     @Test
+    fun `should throw exception when length of key more than limit`() {
+        val longKey = "k".repeat(MAX_KEY_LENGTH + 1)
+        assertThrows<IllegalArgumentException> {
+            contractState.put(longKey, SomeDomainObject())
+        }.apply {
+            assertEquals(
+                "Contract key length should be less than $MAX_KEY_LENGTH. Actual key value was '$longKey'",
+                message
+            )
+        }
+    }
+
+    @Test
     fun `should use cache of mapping map with key as Class`() {
         val mappingPrefix = "MY_DOMAIN_OBJECT"
         val callGetMappingCount = 2
@@ -208,6 +230,30 @@ internal class ContractStateTest {
 
         assertTrue(mapping.hasAll(setOf(objectId, otherObjectId)))
         assertFalse(mapping.hasAll(setOf(objectId, otherObjectId, notFoundObjectId)))
+    }
+
+    @Test
+    fun `should return correct state reader`() {
+        val someDomainObject = SomeDomainObject()
+        val contractId = contractId()
+        val key = "key"
+        val dataEntry = dataEntry()
+        every {
+            nodeContractStateValuesProvider.getForKey(contractId, key)
+        } returns Optional.of(dataEntry)
+        every {
+            contractFromDataEntryConverter.convert(dataEntry, SomeDomainObject::class.java)
+        } returns someDomainObject
+
+        val contractStateReader = contractState.external(contractId = contractId)
+        contractStateReader.tryGet(key, SomeDomainObject::class.java)
+
+        verify { nodeContractStateValuesProvider.getForKey(contractId, key) }
+        verify { contractFromDataEntryConverter.convert(dataEntry, SomeDomainObject::class.java) }
+    }
+
+    companion object {
+        const val MAX_KEY_LENGTH = 100
     }
 }
 
