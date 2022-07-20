@@ -50,7 +50,11 @@ class ContractHandlerFactoryImpl<T>(
         }
     }
 
-    private fun putWrc12MetaIntoResult(contractState: ContractState, contractHandler: Class<*>, tx: ContractTransaction) {
+    private fun putWrc12MetaIntoResult(
+        contractState: ContractState,
+        contractHandler: Class<*>,
+        tx: ContractTransaction,
+    ) {
         val meta = WRC12Meta(
             lang = "java",
             interfaces = contractHandler.interfaces.toList().map { it.name },
