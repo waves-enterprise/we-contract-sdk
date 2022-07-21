@@ -1,7 +1,6 @@
 package my.sample.kotlin.contract.rockps
 
-import com.fasterxml.jackson.databind.json.JsonMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.wavesenterprise.sdk.contract.api.state.ContractState
 import com.wavesenterprise.sdk.contract.api.state.TypeReference
 import com.wavesenterprise.sdk.contract.api.state.mapping.Mapping
@@ -24,11 +23,14 @@ import my.sample.kotlin.contract.rockps.game.request.CreateGameRequest
 import my.sample.kotlin.contract.rockps.game.request.PlayRequest
 import my.sample.kotlin.contract.rockps.game.request.RevealRequest
 import my.sample.kotlin.contract.rockps.util.hash
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 
-class RockPaperScissorsContractTest{
-    var objectMapper: JsonMapper = JsonMapper.builder().addModule(JavaTimeModule()).build()
+class RockPaperScissorsContractTest {
+
+    private val objectMapper = jacksonObjectMapper()
 
     @Test
     fun `should throw error when more than two players`() {
@@ -115,11 +117,11 @@ class RockPaperScissorsContractTest{
         val currentAddress = address()
         val testState = ContractTestStateFactory.state(objectMapper)
         val players: Mapping<Player> =
-            testState.getMapping<Player>(
+            testState.getMapping(
                 Player::class.java,
                 PLAYERS_MAPPING_PREFIX
             )
-        val rockPaperScissorsContract: RockPaperScissorsContractImpl =
+        val rockPaperScissorsContract =
             RockPaperScissorsContractImpl(
                 testState,
                 contractTransaction(currentAddress, TxType.CREATE_CONTRACT)
@@ -147,7 +149,7 @@ class RockPaperScissorsContractTest{
             contractTransaction(currentAddress, TxType.CREATE_CONTRACT)
         )
         val currentAddressStr = currentAddress.asBase58String()
-        testState.put(PLAYER_ADDRESSES_KEY, listOf(currentAddress))
+        testState.put(PLAYER_ADDRESSES_KEY, listOf(currentAddressStr))
         val salt = "asdfb23"
         val answerType = AnswerType.PAPER
         val hashedAnswer = hash(answerType.toString() + "_" + salt)

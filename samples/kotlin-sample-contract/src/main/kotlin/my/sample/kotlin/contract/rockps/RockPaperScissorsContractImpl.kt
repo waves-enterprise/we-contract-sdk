@@ -62,16 +62,19 @@ class RockPaperScissorsContractImpl(
         check(!(game.status === GameStatus.FINISHED)) { "Game has already finished" }
         val currentAddress = txSender()
         game.reveal(currentAddress, revealRequest.salt)
-        game.players.get(currentAddress)?.let { players.put(currentAddress, it) }
+        val player = requireNotNull(game.players[currentAddress]) {
+            "Tx Sender with address $currentAddress not found in players"
+        }
+        players.put(currentAddress, player)
         contractState.put(GAME_KEY, game)
         contractState.put(GAME_STATUS_KEY, game.status)
-        if (game.winner != null) {
-            contractState.put(GAME_WINNER_ADDR_KEY, game.winner!!.address)
+        game.winner?.let {
+            contractState.put(GAME_WINNER_ADDR_KEY, it.address)
         }
     }
 
     private fun startGame(addresses: Set<String>) {
-        val game = Game(players = players.getAll(addresses))
+        val game = Game(players = players.getAll(addresses).values.associateBy { it.address })
         contractState.put(GAME_KEY, game)
         contractState.put(GAME_STATUS_KEY, game.status)
     }

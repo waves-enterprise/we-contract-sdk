@@ -10,12 +10,15 @@ data class Game(
     var winner: Player? = null,
     var status: GameStatus = GameStatus.ACTIVE,
 ) {
+
     fun reveal(address: String, salt: String) {
-        val player = players[address]
-            ?: throw IllegalArgumentException("Address $address isn't among players of the game")
+        val player = requireNotNull(players[address]) {
+            "Address $address isn't among players of the game"
+        }
         val hashedAnswers = getHashedAnswers(salt)
-        val answer = hashedAnswers[player.hashedAnswer]
-            ?: throw IllegalArgumentException("Not found matching answer for salt")
+        val answer = requireNotNull(hashedAnswers[player.hashedAnswer]) {
+            "Not found matching answer for salt"
+        }
         player.answer = answer
         if (allPlayersAnswered()) {
             finish()
@@ -37,13 +40,12 @@ data class Game(
     }
 
     private fun allPlayersHaveTheSameAnswers(): Boolean {
-        val differentAnswers = players.values.stream().map { obj: Player -> obj.answer }
-            .collect(Collectors.toSet())
+        val differentAnswers = players.values.map { obj: Player -> obj.answer }.toSet()
         return differentAnswers.size == 1
     }
 
     private fun allPlayersAnswered(): Boolean {
-        return players.values.stream().allMatch { player: Player -> player.answer != null }
+        return players.values.all { player: Player -> player.answer != null }
     }
 
     private fun getHashedAnswers(salt: String): Map<String, AnswerType> {
