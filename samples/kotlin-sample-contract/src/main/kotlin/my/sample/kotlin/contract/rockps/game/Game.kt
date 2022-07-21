@@ -1,0 +1,68 @@
+package my.sample.kotlin.contract.rockps.game
+
+import my.sample.kotlin.contract.rockps.util.hash
+import java.util.*
+import java.util.function.Function
+import java.util.stream.Collectors
+
+data class Game(
+    val players: Map<String, Player>,
+    var winner: Player? = null,
+    var status: GameStatus = GameStatus.ACTIVE,
+) {
+    fun reveal(address: String, salt: String) {
+        val player = players[address]
+            ?: throw IllegalArgumentException("Address $address isn't among players of the game")
+        val hashedAnswers = getHashedAnswers(salt)
+        val answer = hashedAnswers[player.hashedAnswer]
+            ?: throw IllegalArgumentException("Not found matching answer for salt")
+        player.answer = answer
+        if (allPlayersAnswered()) {
+            finish()
+        }
+    }
+
+    private fun finish() {
+        status = GameStatus.FINISHED
+        if (allPlayersHaveTheSameAnswers()) {
+            return
+        }
+        winner = players.values.stream().max { player1: Player, player2: Player ->
+            AnswerComparator().compare(player1.answer!!, player2.answer!!)
+        }.orElseThrow {
+            IllegalStateException(
+                "Winner could not be determined"
+            )
+        }
+    }
+
+    private fun allPlayersHaveTheSameAnswers(): Boolean {
+        val differentAnswers = players.values.stream().map { obj: Player -> obj.answer }
+            .collect(Collectors.toSet())
+        return differentAnswers.size == 1
+    }
+
+    private fun allPlayersAnswered(): Boolean {
+        return players.values.stream().allMatch { player: Player -> player.answer != null }
+    }
+
+    private fun getHashedAnswers(salt: String): Map<String, AnswerType> {
+        return Arrays.stream(AnswerType.values()).collect(
+            Collectors.toMap(
+                { answerType: AnswerType ->
+                    hash(
+                        answerType.toString() + "_" + salt
+                    )
+                }, Function.identity()
+            )
+        )
+    }
+
+    internal class AnswerComparator : Comparator<AnswerType> {
+        override fun compare(o1: AnswerType, o2: AnswerType): Int {
+            return if (o1 == AnswerType.SCISSORS && o2 == AnswerType.ROCK || o1 == AnswerType.ROCK && o2 == AnswerType.SCISSORS) {
+                -o1.compareTo(o2)
+            } else o1.compareTo(o2)
+        }
+    }
+}
