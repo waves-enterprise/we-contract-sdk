@@ -6,6 +6,7 @@ import com.wavesenterprise.sdk.contract.api.state.NodeContractStateValuesProvide
 import com.wavesenterprise.sdk.contract.api.state.TypeReference
 import com.wavesenterprise.sdk.contract.api.state.getForKeyAsNullable
 import com.wavesenterprise.sdk.contract.api.state.mapping.ReadMapping
+import com.wavesenterprise.sdk.contract.api.wrc.WRC12.CONTRACT_META_KEY
 import com.wavesenterprise.sdk.contract.api.wrc.WRC12Meta
 import com.wavesenterprise.sdk.contract.core.state.mapping.PrefixedKeyMapper
 import com.wavesenterprise.sdk.contract.core.state.mapping.ReadMappingForType
@@ -71,9 +72,7 @@ class ContractStateReaderIml(
             typeReference = typeReference
         )
 
-    override fun getContractMeta(): Optional<WRC12Meta> {
-        TODO("Not yet implemented")
-    }
+    override fun getContractMeta(): Optional<WRC12Meta> = tryGet(CONTRACT_META_KEY, WRC12Meta::class.java)
 
     private fun <T> getAllWithEntryMapping(
         keys: Set<String>,

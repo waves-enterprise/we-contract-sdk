@@ -4,15 +4,19 @@ import com.wavesenterprise.sdk.contract.api.annotation.ContractHandler
 import com.wavesenterprise.sdk.contract.api.domain.ContractCall
 import com.wavesenterprise.sdk.contract.api.domain.DefaultContractCall
 import com.wavesenterprise.sdk.contract.api.state.ContractState
+import com.wavesenterprise.sdk.contract.api.wrc.WRC12Meta
 import com.wavesenterprise.sdk.node.domain.Address
 import com.wavesenterprise.sdk.node.domain.Timestamp
 import com.wavesenterprise.sdk.node.domain.TxId
+import com.wavesenterprise.sdk.node.domain.TxType
 import com.wavesenterprise.sdk.node.domain.contract.ContractTransaction
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
+import io.mockk.slot
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -36,6 +40,8 @@ internal class ContractHandlerFactoryImplTest {
         every { contractTransaction.sender } returns txSenderAddress
         every { contractTransaction.id } returns contractTxId
         every { contractTransaction.timestamp } returns contractTxTimestamp
+        every { contractTransaction.type } returns TxType.CREATE_CONTRACT
+        every { contractState.put(any(), any()) } returns contractState
     }
 
     @Test
@@ -116,6 +122,52 @@ internal class ContractHandlerFactoryImplTest {
                 message
             )
         }
+    }
+
+    @Test
+    fun `should create contract handler and put meta info on state when tx type is CREATE_CONTRACT`() {
+        val wrc12MetaCaptor = slot<WRC12Meta>()
+        val txIdCaptor = slot<TxId>()
+        val contractHandlerFactory = ContractHandlerFactoryImpl(
+            contractState,
+            TestContractHandlerForContractTransactionAndState::class.java
+        )
+        every { contractTransaction.type } returns TxType.CREATE_CONTRACT
+        every { contractState.put(CONTRACT_ID_KEY, capture(txIdCaptor)) } returns contractState
+        every { contractState.put(CONTRACT_META_KEY, capture(wrc12MetaCaptor)) } returns contractState
+
+        contractHandlerFactory.createHandler(contractTransaction)
+
+        assertTrue(
+            wrc12MetaCaptor.captured.impls.contains(
+                TestContractHandlerForContractTransactionAndState::class.java.name
+            )
+        )
+        assertEquals(contractTransaction.id, txIdCaptor.captured)
+    }
+
+    @Test
+    fun `should create contract handler and put meta info on state when tx type is CALL_CONTRACT`() {
+        val wrc12MetaCaptor = slot<WRC12Meta>()
+        val contractHandlerFactory = ContractHandlerFactoryImpl(
+            contractState,
+            TestContractHandlerForContractTransactionAndState::class.java
+        )
+        every { contractTransaction.type } returns TxType.CALL_CONTRACT
+        every { contractState.put(CONTRACT_META_KEY, capture(wrc12MetaCaptor)) } returns contractState
+
+        contractHandlerFactory.createHandler(contractTransaction)
+
+        assertTrue(
+            wrc12MetaCaptor.captured.impls.contains(
+                TestContractHandlerForContractTransactionAndState::class.java.name
+            )
+        )
+    }
+
+    companion object {
+        const val CONTRACT_META_KEY = "__WRC12_CONTRACT_META"
+        const val CONTRACT_ID_KEY = "__WRC12_CONTRACT_ID"
     }
 }
 
