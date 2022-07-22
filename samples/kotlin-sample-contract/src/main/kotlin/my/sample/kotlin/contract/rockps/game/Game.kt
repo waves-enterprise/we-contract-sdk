@@ -30,13 +30,10 @@ data class Game(
         if (allPlayersHaveTheSameAnswers()) {
             return
         }
-        winner = players.values.stream().max { player1: Player, player2: Player ->
-            AnswerComparator().compare(player1.answer!!, player2.answer!!)
-        }.orElseThrow {
-            IllegalStateException(
+        winner = players.values.maxByOrNull { it.answer!! }
+            ?: throw IllegalStateException(
                 "Winner could not be determined"
             )
-        }
     }
 
     private fun allPlayersHaveTheSameAnswers(): Boolean {
@@ -44,21 +41,10 @@ data class Game(
         return differentAnswers.size == 1
     }
 
-    private fun allPlayersAnswered(): Boolean {
-        return players.values.all { player: Player -> player.answer != null }
-    }
+    private fun allPlayersAnswered() = players.values.all { player: Player -> player.answer != null }
 
-    private fun getHashedAnswers(salt: String): Map<String, AnswerType> {
-        return Arrays.stream(AnswerType.values()).collect(
-            Collectors.toMap(
-                { answerType: AnswerType ->
-                    hash(
-                        answerType.toString() + "_" + salt
-                    )
-                }, Function.identity()
-            )
-        )
-    }
+    private fun getHashedAnswers(salt: String) =
+        AnswerType.values().associateBy { hash(it.toString() + "_" + salt) }
 
     internal class AnswerComparator : Comparator<AnswerType> {
         override fun compare(o1: AnswerType, o2: AnswerType): Int {
