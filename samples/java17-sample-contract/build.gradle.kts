@@ -4,20 +4,16 @@ plugins {
     id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
-val weContractSdkVersion = "1.1.0"
-
-val jacksonVersion = "2.13.2"
-val junitVersion = "5.8.2"
-val apacheCommonsCodecVersion = "1.15"
+val weContractSdkVersion: String by project
+val jacksonVersion: String by project
+val junitVersion: String by project
+val apacheCommonsCodecVersion: String by project
 
 dependencies {
     implementation("com.wavesenterprise:we-contract-sdk-grpc:$weContractSdkVersion")
-
     implementation("com.wavesenterprise:we-contract-sdk-test:$weContractSdkVersion")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
-    // https://mvnrepository.com/artifact/commons-codec/commons-codec
     implementation("commons-codec:commons-codec:$apacheCommonsCodecVersion")
-
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")

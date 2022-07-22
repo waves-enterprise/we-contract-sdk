@@ -4,21 +4,20 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
     kotlin("jvm") version "1.7.0"
+    application
+    id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
-val weContractSdkVersion = "1.1.0"
-
-val jacksonVersion = "2.13.2"
-val junitVersion = "5.8.2"
-val apacheCommonsCodecVersion = "1.15"
+val weContractSdkVersion: String by project
+val jacksonVersion: String by project
+val junitVersion: String by project
+val apacheCommonsCodecVersion: String by project
 
 dependencies {
     implementation("com.wavesenterprise:we-contract-sdk-grpc:$weContractSdkVersion")
     implementation("com.wavesenterprise:we-contract-sdk-test:$weContractSdkVersion")
-
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
-
     implementation("commons-codec:commons-codec:$apacheCommonsCodecVersion")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
@@ -50,4 +49,8 @@ tasks.withType<KotlinCompile>().configureEach {
         freeCompilerArgs = listOf("-Xjsr305=strict")
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
+}
+
+application {
+    this.mainClass.set("my.sample.kotlin.contract.rockps.MainDispatchKt")
 }
