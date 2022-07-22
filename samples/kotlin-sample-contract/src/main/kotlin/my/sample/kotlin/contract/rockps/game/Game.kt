@@ -1,9 +1,6 @@
 package my.sample.kotlin.contract.rockps.game
 
 import my.sample.kotlin.contract.rockps.util.hash
-import java.util.*
-import java.util.function.Function
-import java.util.stream.Collectors
 
 data class Game(
     val players: Map<String, Player>,
@@ -30,10 +27,11 @@ data class Game(
         if (allPlayersHaveTheSameAnswers()) {
             return
         }
-        winner = players.values.maxByOrNull { it.answer!! }
-            ?: throw IllegalStateException(
-                "Winner could not be determined"
-            )
+        winner = players.values.maxWithOrNull { a: Player, b: Player ->
+            AnswerComparator().compare(a.answer!!, b.answer!!)
+        } ?: throw IllegalStateException(
+            "Winner could not be determined"
+        )
     }
 
     private fun allPlayersHaveTheSameAnswers(): Boolean {
