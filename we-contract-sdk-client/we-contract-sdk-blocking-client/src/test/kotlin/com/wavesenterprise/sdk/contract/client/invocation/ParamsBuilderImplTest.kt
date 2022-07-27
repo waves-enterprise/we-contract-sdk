@@ -22,11 +22,11 @@ internal class ParamsBuilderImplTest {
     @ParameterizedTest
     @MethodSource("contractMethods")
     fun `should take params`(
-        method: Pair<Method, Array<out Any>?>,
+        methods: Pair<Method, Array<out Any>?>,
     ) {
-        val (methods, args) = method
-        val params = paramsBuilder.build(method.first, method.second)
-        val actionDataValue = firstDataEntry(method.first.name)
+        val (method, args) = methods
+        val params = paramsBuilder.build(method, args)
+        val actionDataValue = firstDataEntry(method.name)
 
         assertEquals(actionDataValue, params[0])
         args?.let { arg ->
