@@ -47,6 +47,9 @@ tests&build:
     - .test-gradle
   script:
     - ./gradlew -PweMavenUser=$MAVEN_USER -PweMavenPassword=$MAVEN_PASSWORD version check build publish
+    - echo 'test-test'
+    - ./samples/take_root_version_for_build.sh
+    - echo 'test-test'
   only:
     - dev
     - /^.*rc.*$/
@@ -61,6 +64,7 @@ tests&build_for_maven_central:
     - cat $we_maven_central_gpg | base64 --decode > "$(pwd)/we_maven_central.gpg"
     - ./gradlew --no-parallel -PsonaTypeMavenUser=$SONATYPE_USER -PsonaTypeMavenPassword=$SONATYPE_PASSWORD -Psigning.keyId=$SIGN_KEY_ID -Psigning.password=$SIGN_PASSWORD -Psigning.secretKeyRingFile="$(pwd)/we_maven_central.gpg" version check build publish
     - ./gradlew -PsonaTypeMavenUser=$SONATYPE_USER -PsonaTypeMavenPassword=$SONATYPE_PASSWORD closeAndReleaseRepository
+    - ./samples/take_root_version_for_build.sh
   only:
     - master
   <<: *artifacts
