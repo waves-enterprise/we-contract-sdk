@@ -1,5 +1,6 @@
 package com.wavesenterprise.sdk.contract.client.invocation
 
+import com.wavesenterprise.sdk.contract.client.invocation.impl.TxTypeResolverImpl
 import com.wavesenterprise.sdk.node.domain.TxType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.params.ParameterizedTest

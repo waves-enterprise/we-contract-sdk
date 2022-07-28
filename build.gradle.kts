@@ -14,6 +14,7 @@ val logbackVersion: String by project
 val sl4jExtVersion: String by project
 val javaxAnnotationApiVersion: String by project
 val commonsLangVersion: String by project
+val jacksonVersion: String by project
 
 val ioGrpcVersion: String by project
 val ioGrpcKotlinVersion: String by project
@@ -290,6 +291,8 @@ subprojects {
             dependency("io.mockk:mockk:$mockkVersion")
             dependency("com.ninja-squad:springmockk:$springMockkVersion")
             dependency("com.frimastudio:slf4j-kotlin-extensions:$sl4jExtVersion")
+            dependency("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
+            dependency("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
 
             dependency("com.wavesenterprise:we-node-client-domain:$weNodeClientVersion")
             dependency("com.wavesenterprise:we-node-client-blocking-client:$weNodeClientVersion")

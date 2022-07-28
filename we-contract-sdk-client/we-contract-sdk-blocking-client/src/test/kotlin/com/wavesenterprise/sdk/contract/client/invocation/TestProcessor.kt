@@ -23,6 +23,14 @@ class TestProcessor {
     @ContractAction
     fun testActionCallWithoutParams() { }
 
+    @ContractAction
+    fun testActionCallWithSeveralParameters(
+        @InvokeParam(name = REQUEST_PARAM_KEY) obj: TestObject,
+        @InvokeParam(name = REQUEST_PARAM_KEY) int: Int,
+        @InvokeParam(name = REQUEST_PARAM_KEY) str: String,
+        @InvokeParam(name = REQUEST_PARAM_KEY) bool: Boolean,
+    ) { }
+
     companion object {
         const val REQUEST_PARAM_KEY = "request"
     }

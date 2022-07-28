@@ -1,7 +1,9 @@
 package com.wavesenterprise.sdk.contract.client.invocation
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.wavesenterprise.sdk.contract.api.annotation.InvokeParam
 import com.wavesenterprise.sdk.contract.api.state.ContractToDataValueConverter
+import com.wavesenterprise.sdk.contract.client.invocation.impl.ParamsBuilderImpl
 import com.wavesenterprise.sdk.contract.jackson.JacksonContractToDataValueConverter
 import com.wavesenterprise.sdk.node.domain.DataEntry
 import com.wavesenterprise.sdk.node.domain.DataKey
@@ -22,20 +24,23 @@ internal class ParamsBuilderImplTest {
     @ParameterizedTest
     @MethodSource("contractMethods")
     fun `should take params`(
-        methods: Pair<Method, Array<out Any>?>,
+        methods: Pair<Method, Array<out Any>>,
     ) {
         val (method, args) = methods
         val params = paramsBuilder.build(method, args)
         val actionDataValue = firstDataEntry(method.name)
 
         assertEquals(actionDataValue, params[0])
-        args?.let { arg ->
-            assertEquals(arg.size + 1, params.size)
-            params[1].apply {
+        for (i in params.indices) {
+            if (i == 0) {
+                assertEquals(actionDataValue, params[i])
+                continue
+            }
+            params[i].apply {
                 assertEquals(
                     DataEntry(
-                        key = DataKey(INVOKE_PARAM),
-                        value = contractToDataValueConverter.convert(args[0])
+                        key = DataKey(method.parameters[i - 1].getAnnotation(InvokeParam::class.java).name),
+                        value = contractToDataValueConverter.convert(args[i - 1])
                     ),
                     this
                 )
@@ -59,7 +64,8 @@ internal class ParamsBuilderImplTest {
                 TestProcessor::testActionCallBoolean.javaMethod!! to arrayOf(true),
                 TestProcessor::testActionCallInteger.javaMethod!! to arrayOf(1),
                 TestProcessor::testActionCallString.javaMethod!! to arrayOf("test"),
-                TestProcessor::testActionCallWithoutParams.javaMethod!! to null,
+                TestProcessor::testActionCallWithoutParams.javaMethod!! to arrayOf(),
+                TestProcessor::testActionCallWithSeveralParameters.javaMethod!! to arrayOf(TestObject(), 1, "str", true)
             )
     }
 }

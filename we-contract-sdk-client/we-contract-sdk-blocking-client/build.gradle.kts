@@ -1,4 +1,3 @@
-val jacksonVersion = "2.13.2"
 
 dependencies {
     implementation(kotlin("stdlib"))
@@ -12,6 +11,6 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-engine")
     testImplementation("io.mockk:mockk")
     testImplementation(project(":we-contract-sdk-jackson"))
-    testImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
-    testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
+    testImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
+    testImplementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 }

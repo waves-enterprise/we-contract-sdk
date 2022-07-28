@@ -1,6 +1,7 @@
-package com.wavesenterprise.sdk.contract.client.invocation
+package com.wavesenterprise.sdk.contract.client.invocation.impl
 
 import com.wavesenterprise.sdk.contract.api.annotation.ContractInit
+import com.wavesenterprise.sdk.contract.client.invocation.TxTypeResolver
 import com.wavesenterprise.sdk.node.domain.TxType
 import java.lang.reflect.Method
 
