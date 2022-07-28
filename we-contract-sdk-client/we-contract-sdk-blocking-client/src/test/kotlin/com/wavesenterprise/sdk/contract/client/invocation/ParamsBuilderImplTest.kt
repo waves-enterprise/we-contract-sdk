@@ -55,7 +55,6 @@ internal class ParamsBuilderImplTest {
 
     companion object {
         const val ACTION_PARAM_KEY = "action"
-        const val INVOKE_PARAM = "request"
 
         @JvmStatic
         fun contractMethods(): Stream<Pair<Method, Array<out Any>?>> =

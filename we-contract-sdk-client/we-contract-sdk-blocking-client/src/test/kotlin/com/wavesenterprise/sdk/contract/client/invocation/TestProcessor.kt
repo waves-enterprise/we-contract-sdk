@@ -25,10 +25,10 @@ class TestProcessor {
 
     @ContractAction
     fun testActionCallWithSeveralParameters(
-        @InvokeParam(name = REQUEST_PARAM_KEY) obj: TestObject,
-        @InvokeParam(name = REQUEST_PARAM_KEY) int: Int,
-        @InvokeParam(name = REQUEST_PARAM_KEY) str: String,
-        @InvokeParam(name = REQUEST_PARAM_KEY) bool: Boolean,
+        @InvokeParam(name = "obj") obj: TestObject,
+        @InvokeParam(name = "int") int: Int,
+        @InvokeParam(name = "str") str: String,
+        @InvokeParam(name = "bool") bool: Boolean,
     ) { }
 
     companion object {
