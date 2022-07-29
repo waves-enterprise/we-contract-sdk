@@ -28,17 +28,12 @@ class ParamsBuilderImpl(
     }
 
     private fun getInvokeParams(parameters: Array<Parameter>, args: Array<out Any>?) =
-        buildList {
-            parameters.indices.forEach { i ->
-                requireNotNull(args)
-                args[i].let { arg ->
-                    val dataEntry = DataEntry(
-                        key = DataKey(parameters[i].takeName()),
-                        value = converter.convert(arg)
-                    )
-                    add(dataEntry)
-                }
-            }
+        parameters.indices.map { i ->
+            requireNotNull(args)
+            DataEntry(
+                key = DataKey(parameters[i].takeName()),
+                value = converter.convert(args[i])
+            )
         }
 
     private fun Parameter.takeName() = getAnnotation(InvokeParam::class.java)?.name ?: name
