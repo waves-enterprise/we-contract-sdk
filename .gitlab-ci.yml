@@ -47,9 +47,7 @@ tests&build:
     - .test-gradle
   script:
     - ./gradlew -PweMavenUser=$MAVEN_USER -PweMavenPassword=$MAVEN_PASSWORD version check build publish
-    - echo 'test-test'
     - ./samples/take_root_version_for_build.sh
-    - echo 'test-test'
   only:
     - dev
     - /^.*rc.*$/
