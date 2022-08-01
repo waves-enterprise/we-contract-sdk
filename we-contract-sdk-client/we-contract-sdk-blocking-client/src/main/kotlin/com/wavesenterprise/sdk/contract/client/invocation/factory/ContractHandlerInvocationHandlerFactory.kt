@@ -9,7 +9,8 @@ import com.wavesenterprise.sdk.node.domain.TxType
 class ContractHandlerInvocationHandlerFactory(
     val paramsBuilder: ParamsBuilder,
     val txTypeResolver: TxTypeResolver,
+    val localContractValidator: LocalContractValidator,
 ) {
     fun handleContractInvocation(receiver: (List<DataEntry>, TxType) -> (Unit)) =
-        ContractHandlerInvocationHandler(paramsBuilder, txTypeResolver, receiver)
+        ContractHandlerInvocationHandler(paramsBuilder, txTypeResolver, receiver, localContractValidator)
 }
