@@ -3,6 +3,7 @@ dependencies {
     implementation(kotlin("stdlib"))
 
     api(project(":we-contract-sdk-api"))
+    api(project(":we-contract-sdk-client:we-contract-sdk-client-local-validator"))
     api("com.wavesenterprise:we-node-client-domain")
     api("com.wavesenterprise:we-node-client-blocking-client")
 

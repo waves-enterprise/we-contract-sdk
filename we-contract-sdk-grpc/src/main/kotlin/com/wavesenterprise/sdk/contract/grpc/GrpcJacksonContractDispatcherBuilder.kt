@@ -122,7 +122,7 @@ class GrpcJacksonContractDispatcherBuilder {
             executor = actualExecutor,
             connectionId = actualConnectionProperties.connectionId,
             preExecutionHook = { ThreadLocalAuthTokenSupplier.setToken(it.authToken) },
-            postExecutionHook = { ThreadLocalAuthTokenSupplier.clearToken() }
+            postExecutionHook = { ThreadLocalAuthTokenSupplier.clearToken() },
         )
     }
 
