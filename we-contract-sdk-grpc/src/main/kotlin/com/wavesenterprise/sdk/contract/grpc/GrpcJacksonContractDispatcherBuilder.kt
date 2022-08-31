@@ -5,6 +5,7 @@ import com.wavesenterprise.sdk.contract.api.domain.ContractConcurrency
 import com.wavesenterprise.sdk.contract.api.domain.toThreadCount
 import com.wavesenterprise.sdk.contract.api.state.NodeContractStateValuesProvider
 import com.wavesenterprise.sdk.contract.core.dispatch.ContractDispatcher
+import com.wavesenterprise.sdk.contract.core.node.BlockingClientNodeContractStateValuesProvider
 import com.wavesenterprise.sdk.contract.core.state.factory.ContractStateFactory
 import com.wavesenterprise.sdk.contract.core.state.factory.DefaultBackingMapContractStateFactory
 import com.wavesenterprise.sdk.contract.grpc.connect.DefaultGrpcChannelProvider
@@ -14,9 +15,7 @@ import com.wavesenterprise.sdk.contract.grpc.connect.GrpcConnectionProperties
 import com.wavesenterprise.sdk.contract.grpc.connect.HeaderClientInterceptor
 import com.wavesenterprise.sdk.contract.grpc.connect.auth.AuthTokenSupplier
 import com.wavesenterprise.sdk.contract.grpc.connect.auth.ThreadLocalAuthTokenSupplier
-import com.wavesenterprise.sdk.contract.grpc.node.GrpcBlockingClientNodeContractStateValuesProvider
-import com.wavesenterprise.sdk.contract.jackson.JacksonContractToDataValueConverter
-import com.wavesenterprise.sdk.contract.jackson.JacksonFromDataEntryConverter
+import com.wavesenterprise.sdk.contract.jackson.JacksonConverterFactory
 import com.wavesenterprise.sdk.node.domain.blocking.contract.ContractService
 import com.wavesenterprise.sdk.node.domain.contract.AuthToken
 import com.wavesenterprise.sdk.node.domain.grpc.blocking.contract.ContractGrpcBlockingService
@@ -91,8 +90,9 @@ class GrpcJacksonContractDispatcherBuilder {
         val actualContractConcurrency = contractConcurrency ?: ContractConcurrency.IO
         val actualExecutor = executor ?: defaultExecutor(actualContractConcurrency)
 
-        val toDataValueConverter = JacksonContractToDataValueConverter(actualObjectMapper)
-        val fromDataEntryConverter = JacksonFromDataEntryConverter(actualObjectMapper)
+        val jacksonConverterFactor = JacksonConverterFactory(actualObjectMapper)
+        val toDataValueConverter = jacksonConverterFactor.toDataValueConverter()
+        val fromDataEntryConverter = jacksonConverterFactor.fromDataEntryConverter()
 
         val actualConnectionProperties = grpcConnectionProperties ?: EnvGrpcConnectionProperties()
         val actualChannelProvider = channelProvider ?: DefaultGrpcChannelProvider()
@@ -103,7 +103,7 @@ class GrpcJacksonContractDispatcherBuilder {
         val defaultConnectContractService = getConnectContractService(channel, actualConnectionProperties)
 
         val nodeContractStateProvider: NodeContractStateValuesProvider =
-            GrpcBlockingClientNodeContractStateValuesProvider(
+            BlockingClientNodeContractStateValuesProvider(
                 contractService = txContractService ?: defaultTxContractService
             )
 

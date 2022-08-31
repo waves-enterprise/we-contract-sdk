@@ -2,11 +2,7 @@ package com.wavesenterprise.sdk.contract.client.invocation
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.wavesenterprise.sdk.client.local.validator.impl.DefaultLocalContractValidatorImpl
-import com.wavesenterprise.sdk.contract.api.annotation.ContractAction
-import com.wavesenterprise.sdk.contract.api.annotation.ContractHandler
-import com.wavesenterprise.sdk.contract.api.annotation.InvokeParam
 import com.wavesenterprise.sdk.contract.api.exception.ContractPreValidationException
-import com.wavesenterprise.sdk.contract.api.state.ContractState
 import com.wavesenterprise.sdk.contract.api.state.NodeContractStateValuesProvider
 import com.wavesenterprise.sdk.contract.client.invocation.util.callContractTransaction
 import com.wavesenterprise.sdk.contract.client.invocation.util.user
@@ -102,33 +98,3 @@ internal class DefaultLocalContractValidatorImplTest {
         assertThrows<ContractPreValidationException> { contractHandler.put(user) }
     }
 }
-
-@ContractHandler
-interface MyContractHandler {
-
-    @ContractAction
-    fun put(@InvokeParam("user") user: User)
-}
-
-class MyContractHandlerImpl(
-    private val contractState: ContractState,
-) : MyContractHandler {
-
-    private val users = contractState.getMapping(User::class.java, ID_KEY)
-
-    override fun put(user: User) {
-        require(!users.tryGet(user.id.toString()).isPresent) {
-            "ID already taken - ${user.id}"
-        }
-        users.put(user.id.toString(), user)
-    }
-
-    companion object {
-        const val ID_KEY = "ID"
-    }
-}
-
-data class User(
-    val id: UUID,
-    val name: String,
-)
