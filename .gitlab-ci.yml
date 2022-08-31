@@ -78,6 +78,6 @@ tests-mr:
     - git checkout $CI_MERGE_REQUEST_TARGET_BRANCH_NAME
     - git pull
     - git merge origin/$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
-    - ./gradlew -PmavenUser=$MAVEN_USER -PmavenPassword=$MAVEN_PASSWORD check build
+    - ./gradlew -PweMavenUser=$MAVEN_USER -PweMavenPassword=$MAVEN_PASSWORD check build
     - docker images --format "{{json . }}" --no-trunc > images.json
   <<: *artifacts 

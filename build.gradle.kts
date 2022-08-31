@@ -297,6 +297,7 @@ subprojects {
             dependency("com.wavesenterprise:we-node-client-domain:$weNodeClientVersion")
             dependency("com.wavesenterprise:we-node-client-blocking-client:$weNodeClientVersion")
             dependency("com.wavesenterprise:we-node-client-grpc-blocking-client:$weNodeClientVersion")
+            dependency("com.wavesenterprise:we-tx-signer-api:$weNodeClientVersion")
         }
     }
 

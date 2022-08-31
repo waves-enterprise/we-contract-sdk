@@ -1,10 +1,12 @@
 package com.wavesenterprise.sdk.contract.client.invocation.util
 
 import com.wavesenterprise.sdk.contract.client.invocation.User
+import com.wavesenterprise.sdk.contract.test.Util.randomBytesFromUUID
 import com.wavesenterprise.sdk.node.domain.Address
 import com.wavesenterprise.sdk.node.domain.AssetId
 import com.wavesenterprise.sdk.node.domain.DataEntry
 import com.wavesenterprise.sdk.node.domain.Fee
+import com.wavesenterprise.sdk.node.domain.Hash
 import com.wavesenterprise.sdk.node.domain.PublicKey
 import com.wavesenterprise.sdk.node.domain.Signature
 import com.wavesenterprise.sdk.node.domain.Timestamp
@@ -13,7 +15,11 @@ import com.wavesenterprise.sdk.node.domain.TxType
 import com.wavesenterprise.sdk.node.domain.TxVersion
 import com.wavesenterprise.sdk.node.domain.contract.CallContractTransaction
 import com.wavesenterprise.sdk.node.domain.contract.ContractId
+import com.wavesenterprise.sdk.node.domain.contract.ContractImage
+import com.wavesenterprise.sdk.node.domain.contract.ContractName
 import com.wavesenterprise.sdk.node.domain.contract.ContractVersion
+import com.wavesenterprise.sdk.node.domain.tx.CallContractTx
+import com.wavesenterprise.sdk.node.domain.tx.CreateContractTx
 import java.util.UUID
 
 fun callContractTransaction(
@@ -40,3 +46,34 @@ fun user(
     id = id,
     name = name,
 )
+
+fun callContractTx(
+    params: List<DataEntry> = emptyList(),
+) =
+    CallContractTx(
+        id = TxId(randomBytesFromUUID()),
+        senderPublicKey = PublicKey(randomBytesFromUUID()),
+        contractId = ContractId(TxId(randomBytesFromUUID())),
+        params = params,
+        fee = Fee(0L),
+        timestamp = Timestamp(0L),
+        contractVersion = ContractVersion(1),
+        senderAddress = Address(randomBytesFromUUID()),
+        version = TxVersion(1),
+    )
+
+fun createContractTx(
+    params: List<DataEntry> = emptyList(),
+) =
+    CreateContractTx(
+        id = TxId(randomBytesFromUUID()),
+        senderPublicKey = PublicKey(randomBytesFromUUID()),
+        params = params,
+        fee = Fee(0L),
+        timestamp = Timestamp(0L),
+        senderAddress = Address(randomBytesFromUUID()),
+        version = TxVersion(1),
+        image = ContractImage("image"),
+        imageHash = Hash(randomBytesFromUUID()),
+        contractName = ContractName("contractName")
+    )
