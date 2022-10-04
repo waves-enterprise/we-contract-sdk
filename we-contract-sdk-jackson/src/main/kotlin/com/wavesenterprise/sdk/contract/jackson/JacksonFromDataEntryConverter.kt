@@ -47,7 +47,15 @@ class JacksonFromDataEntryConverter(
         require(supportedTypes.any { it == valueType }) {
             "Only Integer or Long types are supported for integer DataEntry value conversion"
         }
-        return dataEntryValue.value as T
+        return when (valueType) {
+            Long::class.java -> dataEntryValue.value as T
+            Int::class.java -> dataEntryValue.value.toInt() as T
+            Integer::class.java -> dataEntryValue.value.toInt() as T
+            java.lang.Long::class.java -> dataEntryValue.value as T
+            else -> {
+                throw IllegalStateException("Unknown valueType = '$valueType'. See on supported types: $supportedTypes")
+            }
+        }
     }
 
     @Suppress("UNCHECKED_CAST")

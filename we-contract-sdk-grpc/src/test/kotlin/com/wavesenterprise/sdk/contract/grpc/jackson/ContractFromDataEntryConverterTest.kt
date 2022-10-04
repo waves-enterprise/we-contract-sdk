@@ -65,10 +65,16 @@ internal class ContractFromDataEntryConverterTest {
             key = DataKey("someKey"),
             value = DataValue.IntegerDataValue(value)
         )
-
+        val expectedValue = when (integerClass) {
+            Long::class.java -> value
+            Int::class.java -> value.toInt()
+            Integer::class.java -> value.toInt()
+            java.lang.Long::class.java -> value
+            else -> throw IllegalStateException("IntegerDataValue unsupported converting to other types")
+        }
         val result = converter.convert(dataEntry, integerClass)
 
-        assertEquals(value, result)
+        assertEquals(expectedValue, result)
     }
 
     @Test
