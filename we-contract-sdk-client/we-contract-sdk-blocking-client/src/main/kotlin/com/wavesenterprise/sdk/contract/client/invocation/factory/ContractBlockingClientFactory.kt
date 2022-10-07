@@ -23,33 +23,30 @@ import java.lang.reflect.Proxy
 class ContractBlockingClientFactory<T, S>(
     private val contractClass: Class<T>?,
     private val contractInterface: Class<S>,
-    private val txSigner: TxSigner,
-    private val converterFactory: JacksonConverterFactory,
     private val contractClientProperties: ContractClientParams,
     private val contractSignRequestBuilder: ContractSignRequestBuilder,
+    converterFactory: JacksonConverterFactory,
     nodeBlockingServiceFactory: NodeBlockingServiceFactory,
 ) {
     private val txService: TxService = nodeBlockingServiceFactory.txService()
     private val contractService: ContractService = nodeBlockingServiceFactory.contractService()
+    private val toDataValueConverter = converterFactory.toDataValueConverter()
+    private val fromDataEntryConverter = converterFactory.fromDataEntryConverter()
+    private val nodeContractStateProvider = BlockingClientNodeContractStateValuesProvider(
+        contractService = contractService
+    )
+    private val contractStateFactory = DefaultBackingMapContractStateFactory(
+        nodeContractStateValuesProvider = nodeContractStateProvider,
+        contractFromDataEntryConverter = fromDataEntryConverter,
+        contractToDataValueConverter = toDataValueConverter,
+    )
+    private val paramsBuilder: ParamsBuilder = ParamsBuilderImpl(toDataValueConverter)
+    private val txTypeResolver: TxTypeResolver = TxTypeResolverImpl()
+    private val invocationHandlerFactory = ContractHandlerInvocationHandlerFactory(paramsBuilder, txTypeResolver)
 
     @Suppress("UNCHECKED_CAST")
-    fun createContractClient(): S {
-        val nodeContractStateProvider = BlockingClientNodeContractStateValuesProvider(
-            contractService = contractService
-        )
-
-        val toDataValueConverter = converterFactory.toDataValueConverter()
-        val fromDataEntryConverter = converterFactory.fromDataEntryConverter()
-
-        val contractStateFactory = DefaultBackingMapContractStateFactory(
-            nodeContractStateValuesProvider = nodeContractStateProvider,
-            contractFromDataEntryConverter = fromDataEntryConverter,
-            contractToDataValueConverter = toDataValueConverter,
-        )
-
-        val paramsBuilder: ParamsBuilder = ParamsBuilderImpl(toDataValueConverter)
-        val txTypeResolver: TxTypeResolver = TxTypeResolverImpl()
-        val invocationHandlerFactory = ContractHandlerInvocationHandlerFactory(paramsBuilder, txTypeResolver)
+    fun executeContract(txSigner: TxSigner, receiver: (S) -> Unit): ExecutionContext {
+        var resultTx: ContractTx? = null
         val contractHandlerInvocationHandler =
             invocationHandlerFactory.handleContractInvocation { params: List<DataEntry>, txType: TxType ->
                 val signRequest = contractSignRequestBuilder
@@ -57,14 +54,20 @@ class ContractBlockingClientFactory<T, S>(
                     .build(txType)
                 val tx = txSigner.sign(signRequest)
                 handleLocalContractValidation(contractStateFactory, fromDataEntryConverter, tx)
-                txService.broadcast(tx)
+                resultTx = txService.broadcast(tx)
             }
-
-        return Proxy.newProxyInstance(
-            contractInterface.classLoader,
-            arrayOf(contractInterface),
-            contractHandlerInvocationHandler,
-        ) as S
+        receiver(
+            Proxy.newProxyInstance(
+                contractInterface.classLoader,
+                arrayOf(contractInterface),
+                contractHandlerInvocationHandler,
+            ) as S
+        )
+        return ExecutionContext(
+            tx = requireNotNull(resultTx) {
+                "Result tx is null. Probably you have passed an empty receiver."
+            }
+        )
     }
 
     private fun handleLocalContractValidation(
@@ -83,3 +86,7 @@ class ContractBlockingClientFactory<T, S>(
         }
     }
 }
+
+data class ExecutionContext(
+    val tx: ContractTx,
+)

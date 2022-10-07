@@ -97,14 +97,11 @@ class ContractBlockingClientFactoryTest {
         val contractBlockingClientFactory = ContractBlockingClientFactory(
             contractClass = contractClass,
             contractInterface = contractInterface,
-            txSigner = txSigner,
             converterFactory = converterFactory,
             contractClientProperties = contractClientParams,
             contractSignRequestBuilder = contractSignRequestBuilder,
             nodeBlockingServiceFactory = nodeBlockingServiceFactory,
         )
-        val contract = contractBlockingClientFactory.createContractClient()
-
         val signRequestCapture = slot<SignRequest<CallContractTx>>()
         val txCaptor = slot<CallContractTx>()
         val callContractTx = callContractTx(
@@ -113,12 +110,14 @@ class ContractBlockingClientFactoryTest {
                 userDataEntry,
             )
         )
-
         every { txSigner.sign(capture(signRequestCapture)) } returns callContractTx
         every { txService.broadcast(capture(txCaptor)) } returns callContractTx
         every { contractService.getContractKey(any()) } returns Optional.empty()
 
-        contract.put(user)
+        contractBlockingClientFactory.executeContract(txSigner) {
+            contract ->
+            contract.put(user)
+        }
 
         verify { txSigner.sign(signRequestCapture.captured) }
         verify { txService.broadcast(callContractTx) }
@@ -148,14 +147,11 @@ class ContractBlockingClientFactoryTest {
         val contractBlockingClientFactory = ContractBlockingClientFactory(
             contractClass = contractClass,
             contractInterface = contractInterface,
-            txSigner = txSigner,
             converterFactory = converterFactory,
             contractClientProperties = contractClientParams,
             contractSignRequestBuilder = contractSignRequestBuilder,
             nodeBlockingServiceFactory = nodeBlockingServiceFactory,
         )
-        val contract = contractBlockingClientFactory.createContractClient()
-
         val signRequestCapture = slot<SignRequest<CreateContractTx>>()
         val txCaptor = slot<CreateContractTx>()
         val createContractTx = createContractTx(
@@ -169,8 +165,10 @@ class ContractBlockingClientFactoryTest {
         every { txService.broadcast(capture(txCaptor)) } returns createContractTx
         every { contractService.getContractKey(any()) } returns Optional.empty()
 
-        contract.createContract(user)
-        println()
+        contractBlockingClientFactory.executeContract(txSigner) {
+            contract ->
+            contract.createContract(user)
+        }
 
         verify { txSigner.sign(signRequestCapture.captured) }
         verify { txService.broadcast(createContractTx) }
