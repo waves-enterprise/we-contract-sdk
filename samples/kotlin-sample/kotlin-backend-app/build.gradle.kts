@@ -17,7 +17,6 @@ val apacheCommonsCodecVersion: String by project
 val springBootVersion: String by project
 val feignVersion: String by project
 val nodeClientVersion: String by project
-val weContractSdkVersion: String by project
 
 dependencies {
     api(project(":kotlin-sample:kotlin-contract"))
@@ -67,4 +66,8 @@ java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(11))
     }
+}
+
+application {
+    this.mainClass.set("my.sample.kotlin.contract.rockps.MainDispatchKt")
 }
