@@ -47,6 +47,7 @@ tests&build:
     - .test-gradle
   script:
     - ./gradlew -PweMavenUser=$MAVEN_USER -PweMavenPassword=$MAVEN_PASSWORD version check build publish
+    - ./samples/take_root_version_for_build.sh
   only:
     - dev
     - /^.*rc.*$/
@@ -61,6 +62,7 @@ tests&build_for_maven_central:
     - cat $we_maven_central_gpg | base64 --decode > "$(pwd)/we_maven_central.gpg"
     - ./gradlew --no-parallel -PsonaTypeMavenUser=$SONATYPE_USER -PsonaTypeMavenPassword=$SONATYPE_PASSWORD -Psigning.keyId=$SIGN_KEY_ID -Psigning.password=$SIGN_PASSWORD -Psigning.secretKeyRingFile="$(pwd)/we_maven_central.gpg" version check build publish
     - ./gradlew -PsonaTypeMavenUser=$SONATYPE_USER -PsonaTypeMavenPassword=$SONATYPE_PASSWORD closeAndReleaseRepository
+    - ./samples/take_root_version_for_build.sh
   only:
     - master
   <<: *artifacts
@@ -76,6 +78,6 @@ tests-mr:
     - git checkout $CI_MERGE_REQUEST_TARGET_BRANCH_NAME
     - git pull
     - git merge origin/$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
-    - ./gradlew -PmavenUser=$MAVEN_USER -PmavenPassword=$MAVEN_PASSWORD check build
+    - ./gradlew -PweMavenUser=$MAVEN_USER -PweMavenPassword=$MAVEN_PASSWORD check build
     - docker images --format "{{json . }}" --no-trunc > images.json
   <<: *artifacts 

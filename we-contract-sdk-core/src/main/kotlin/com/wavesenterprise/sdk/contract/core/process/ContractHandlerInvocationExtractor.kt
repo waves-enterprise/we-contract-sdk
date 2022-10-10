@@ -20,7 +20,6 @@ class ContractHandlerInvocationExtractor<T>(
     private val actionMethodByNameMap: Map<String, Method>
 
     init {
-
         requireNotNull(AnnotationUtils.findAnnotation(contractHandlerType, ContractHandler::class.java)) {
             "Class ${contractHandlerType.canonicalName} doesn't have @ContractHandler annotation on it"
         }

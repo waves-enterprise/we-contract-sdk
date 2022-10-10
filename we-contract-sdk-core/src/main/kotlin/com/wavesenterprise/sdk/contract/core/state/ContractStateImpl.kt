@@ -5,6 +5,7 @@ import com.wavesenterprise.sdk.contract.api.state.ContractStateReader
 import com.wavesenterprise.sdk.contract.api.state.ContractToDataValueConverter
 import com.wavesenterprise.sdk.contract.api.state.TypeReference
 import com.wavesenterprise.sdk.contract.api.state.mapping.Mapping
+import com.wavesenterprise.sdk.contract.core.state.factory.ContractStateReaderFactory
 import com.wavesenterprise.sdk.contract.core.state.mapping.ClassMappingCacheKey
 import com.wavesenterprise.sdk.contract.core.state.mapping.MappingCacheKey
 import com.wavesenterprise.sdk.contract.core.state.mapping.MappingImpl
@@ -13,12 +14,14 @@ import com.wavesenterprise.sdk.contract.core.state.mapping.TypeMappingCacheKey
 import com.wavesenterprise.sdk.contract.core.state.mapping.WriteMappingImpl
 import com.wavesenterprise.sdk.node.domain.DataEntry
 import com.wavesenterprise.sdk.node.domain.DataKey
+import com.wavesenterprise.sdk.node.domain.contract.ContractId
 
 class ContractStateImpl(
     private val contractStateReader: ContractStateReader,
     private val contractToDataValueConverter: ContractToDataValueConverter,
     private val backingMap: MutableMap<String, DataEntry>,
     private val mappingMap: MutableMap<MappingCacheKey, Mapping<*>>,
+    private val contractStateReaderFactory: ContractStateReaderFactory,
 ) : ContractStateReader by contractStateReader, ContractState {
 
     private val executionResultMap: MutableMap<String, DataEntry> = hashMapOf()
@@ -37,6 +40,8 @@ class ContractStateImpl(
             backingMap[key] = it
         }
     }
+
+    override fun external(contractId: ContractId) = contractStateReaderFactory.buildContractState(contractId)
 
     override fun <T> getMapping(type: Class<T>, vararg prefix: String): Mapping<T> {
         val cacheKey = ClassMappingCacheKey(clazz = type, prefix = prefix.toList())

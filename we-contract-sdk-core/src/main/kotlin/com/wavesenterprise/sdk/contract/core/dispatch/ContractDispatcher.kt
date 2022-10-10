@@ -2,15 +2,11 @@ package com.wavesenterprise.sdk.contract.core.dispatch
 
 import com.wavesenterprise.sdk.contract.api.exception.RecoverableException
 import com.wavesenterprise.sdk.contract.api.state.ContractFromDataEntryConverter
-import com.wavesenterprise.sdk.contract.api.state.ContractState
-import com.wavesenterprise.sdk.contract.core.process.ContractHandlerFactoryImpl
 import com.wavesenterprise.sdk.contract.core.process.ContractHandlerInvocationExtractor
 import com.wavesenterprise.sdk.contract.core.process.ContractInvocationArgumentsExtractorImpl
-import com.wavesenterprise.sdk.contract.core.process.ContractTransactionProcessor
-import com.wavesenterprise.sdk.contract.core.state.ContractStateFactory
+import com.wavesenterprise.sdk.contract.core.state.factory.ContractStateFactory
 import com.wavesenterprise.sdk.node.domain.blocking.contract.ContractService
 import com.wavesenterprise.sdk.node.domain.contract.ConnectionRequest
-import com.wavesenterprise.sdk.node.domain.contract.ContractTransaction
 import com.wavesenterprise.sdk.node.domain.contract.ContractTransactionResponse
 import com.wavesenterprise.sdk.node.domain.contract.ExecutionErrorRequest
 import com.wavesenterprise.sdk.node.domain.contract.ExecutionSuccessRequest
@@ -30,21 +26,24 @@ class ContractDispatcher(
     private val connectContractService: ContractService,
     private val txContractService: ContractService,
     private val contractStateFactory: ContractStateFactory,
-    contractFromDataEntryConverter: ContractFromDataEntryConverter,
+    private val contractFromDataEntryConverter: ContractFromDataEntryConverter,
     private val contractHandlerType: Class<*>,
     private val executor: Executor,
     private val connectionId: String,
     private val preExecutionHook: (ContractTransactionResponse) -> (Unit) = {},
     private val postExecutionHook: (ContractTransactionResponse) -> (Unit) = {},
 ) {
+
+    private val contractTxToStateApplier = ContractTxToStateApplier(
+        contractHandlerType = contractHandlerType,
+        contractInvocationMethodExtractor = ContractHandlerInvocationExtractor(contractHandlerType),
+        contractInvocationArgumentsExtractor = ContractInvocationArgumentsExtractorImpl(contractFromDataEntryConverter),
+        contractStateFactory = contractStateFactory,
+    )
+
     companion object {
         private val logger: Logger = LoggerFactory.getLogger(ContractDispatcher::class.java)
     }
-
-    private val contractHandlerInvocationExtractor: ContractHandlerInvocationExtractor<*> =
-        ContractHandlerInvocationExtractor(contractHandlerType)
-    private val contractArgumentInvocationExtractor =
-        ContractInvocationArgumentsExtractorImpl(contractFromDataEntryConverter)
 
     fun dispatch() {
         logger.info("Dispatching contract for handler class ${contractHandlerType.canonicalName}")
@@ -59,7 +58,8 @@ class ContractDispatcher(
                 }
                 preExecutionHook(contractTransactionResponse)
                 try {
-                    val contractState = applyContractTxToState(contractTransactionResponse.transaction)
+                    val contractState =
+                        contractTxToStateApplier.contractTxToState(contractTransactionResponse.transaction)
                     txContractService.commitExecutionSuccess(
                         ExecutionSuccessRequest(
                             txId = contractTransactionResponse.txId(),
@@ -121,28 +121,6 @@ class ContractDispatcher(
             )
             throw commitException
         }
-    }
-
-    // todo extract for future reuse by preValidation
-    private fun applyContractTxToState(contractTransaction: ContractTransaction): ContractState {
-        logger.debug("Applying transaction with ID = ${contractTransaction.id.asBase58String()}")
-        val contractState = contractStateFactory.buildContractState(
-            contractTransaction.contractId
-        )
-        val contractHandlerFactory = ContractHandlerFactoryImpl(
-            contractState = contractState,
-            contractHandlerType = contractHandlerType
-        )
-        ContractTransactionProcessor(
-            contractInvocationMethodExtractor = contractHandlerInvocationExtractor,
-            contractInvocationArgumentsExtractor = contractArgumentInvocationExtractor,
-            contractHandlerFactory = contractHandlerFactory
-        ).process(contractTransaction)
-        logger.debug(
-            "Successfully applied transaction with ID = ${contractTransaction.id.asBase58String()} " +
-                "to virtual state"
-        )
-        return contractState
     }
 
     private fun ContractTransactionResponse.txId() = transaction.id

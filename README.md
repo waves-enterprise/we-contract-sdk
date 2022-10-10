@@ -10,6 +10,8 @@ The methods which implement handling logic are marked with `@ContractInit` (for 
 - **we-contract-sdk-api.**
 Contains mainly interfaces and annotations for marking contract handlers and their methods. 
 Should be used directly by *-contract-api modules.
+- **we-contract-sdk-client.**
+The client contract is used to interact with the contract from the backend code of Java/Kotlin applications. [README](we-contract-sdk-client/README.md)
 - **we-contract-sdk-core.**
 Core processing contract transactions logic. 
 Transport and mapping is not implemented in core module and should be provided externally. 

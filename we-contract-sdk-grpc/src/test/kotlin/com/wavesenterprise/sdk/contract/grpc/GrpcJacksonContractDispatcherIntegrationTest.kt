@@ -35,6 +35,7 @@ import io.netty.util.concurrent.ImmediateExecutor
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import java.time.Instant
+import java.util.Optional
 
 @ExtendWith(MockKExtension::class)
 internal class GrpcJacksonContractDispatcherIntegrationTest {
@@ -123,7 +124,7 @@ internal class GrpcJacksonContractDispatcherIntegrationTest {
         )
         every {
             txContractService.getContractKey(any())
-        } returns null
+        } returns Optional.empty()
 
         val dispatcher = GrpcJacksonContractDispatcherBuilder.builder()
             .contractHandlerType(IntTestContractHandler::class.java)

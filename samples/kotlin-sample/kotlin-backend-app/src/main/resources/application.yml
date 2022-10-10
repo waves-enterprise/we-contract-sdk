@@ -1,0 +1,20 @@
+contract:
+  senderAddress: "3M3ybNZvLG7o7rnM4F7ViRPnDTfVggdfmRX"
+  fee: 0
+  contractId: JBTxg5Q668huzwLuwR7YYuqRrtJQRi3ECYWZqix2ZZUY
+  contractVersion: 1
+  version: 2
+  image: registry.weintegrator.com/icore-sc/we-contract-sdk/samples/game-contract:1.0.5
+  imageHash: 4eed4aba98090e07f58912c38d5b3a0865e3a26d25e2aaed06f01f7d3067e66b
+  contractName: game-contract
+
+node:
+  credentials:
+    senderAddress: 3M3ybNZvLG7o7rnM4F7ViRPnDTfVggdfmRX
+  feign:
+    url: https://fns.cprr-dev.weintegrator.com/fns-node-0
+    decode404: true
+    connectTimeout: 5000
+    readTimeout: 3000
+server:
+  port: 8083

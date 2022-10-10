@@ -3,6 +3,10 @@ package com.wavesenterprise.sdk.contract.core.process
 import com.wavesenterprise.sdk.contract.api.domain.ContractCall
 import com.wavesenterprise.sdk.contract.api.domain.DefaultContractCall
 import com.wavesenterprise.sdk.contract.api.state.ContractState
+import com.wavesenterprise.sdk.contract.api.wrc.WRC12.CONTRACT_ID_KEY
+import com.wavesenterprise.sdk.contract.api.wrc.WRC12.CONTRACT_META_KEY
+import com.wavesenterprise.sdk.contract.api.wrc.WRC12Meta
+import com.wavesenterprise.sdk.node.domain.TxType
 import com.wavesenterprise.sdk.node.domain.contract.ContractTransaction
 import java.lang.reflect.Constructor
 
@@ -39,9 +43,26 @@ class ContractHandlerFactoryImpl<T>(
                             "Contract handler class - ${contractHandlerType.canonicalName}"
                     )
                 }
+                putWrc12MetaIntoResult(contractState, contractHandlerType, tx)
                 invocationParams[idx] = arg
             }
             newInstance(*invocationParams) as T
         }
+    }
+
+    private fun putWrc12MetaIntoResult(
+        contractState: ContractState,
+        contractHandler: Class<*>,
+        tx: ContractTransaction,
+    ) {
+        val meta = WRC12Meta(
+            lang = "java",
+            interfaces = contractHandler.interfaces.toList().map { it.name },
+            impls = listOf(contractHandler.name),
+        )
+        if (tx.type === TxType.CREATE_CONTRACT) {
+            contractState.put(CONTRACT_ID_KEY, tx.id)
+        }
+        contractState.put(CONTRACT_META_KEY, meta)
     }
 }

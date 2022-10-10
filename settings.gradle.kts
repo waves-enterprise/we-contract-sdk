@@ -43,5 +43,6 @@ include(
     "we-contract-sdk-jackson",
     "we-contract-sdk-test",
 
-    ":we-contract-sdk-client:we-contract-sdk-blocking-client"
+    "we-contract-sdk-client:we-contract-sdk-blocking-client", // todo move to other repo
+    "we-contract-sdk-client:we-contract-sdk-client-local-validator"
 )
