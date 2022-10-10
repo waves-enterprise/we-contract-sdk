@@ -14,19 +14,22 @@ val weContractSdkVersion: String by project
 val jacksonVersion: String by project
 val junitVersion: String by project
 val apacheCommonsCodecVersion: String by project
+val springBootVersion: String by project
+val feignVersion: String by project
+val nodeClientVersion: String by project
 
 dependencies {
     api(project(":kotlin-sample:kotlin-contract"))
-    implementation("com.wavesenterprise:we-contract-sdk-blocking-client:1.1.20-c0aee00c-feature_wtch_97-SNAPSHOT") // TODO: change after merge sdk in dev
-    implementation("com.wavesenterprise:we-node-client-grpc-blocking-client:0.3.1")
-    implementation("com.wavesenterprise:we-node-client-feign-client:0.3.1")
-    implementation("com.wavesenterprise:we-tx-signer-node:0.3.1")
+    implementation("com.wavesenterprise:we-contract-sdk-blocking-client:$weContractSdkVersion")
+    implementation("com.wavesenterprise:we-node-client-grpc-blocking-client:$nodeClientVersion")
+    implementation("com.wavesenterprise:we-node-client-feign-client:$nodeClientVersion")
+    implementation("com.wavesenterprise:we-tx-signer-node:$nodeClientVersion")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     implementation("commons-codec:commons-codec:$apacheCommonsCodecVersion")
-    implementation("org.springframework.boot:spring-boot:2.2.3.RELEASE")
-    implementation("org.springframework.boot:spring-boot-starter-web:2.2.3.RELEASE")
-    implementation("io.github.openfeign:feign-core:11.9.1")
+    implementation("org.springframework.boot:spring-boot:$springBootVersion")
+    implementation("org.springframework.boot:spring-boot-starter-web:$springBootVersion")
+    implementation("io.github.openfeign:feign-core:$feignVersion")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
@@ -63,4 +66,8 @@ java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(11))
     }
+}
+
+application {
+    this.mainClass.set("my.sample.kotlin.contract.rockps.MainDispatchKt")
 }
