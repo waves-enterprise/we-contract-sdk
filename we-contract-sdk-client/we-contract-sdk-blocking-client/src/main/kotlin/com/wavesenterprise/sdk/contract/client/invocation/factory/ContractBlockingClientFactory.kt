@@ -9,24 +9,25 @@ import com.wavesenterprise.sdk.contract.core.node.BlockingClientNodeContractStat
 import com.wavesenterprise.sdk.contract.core.state.factory.DefaultBackingMapContractStateFactory
 import com.wavesenterprise.sdk.contract.jackson.JacksonConverterFactory
 import com.wavesenterprise.sdk.contract.jackson.JacksonFromDataEntryConverter
+import com.wavesenterprise.sdk.node.client.blocking.contract.ContractService
+import com.wavesenterprise.sdk.node.client.blocking.node.NodeBlockingServiceFactory
+import com.wavesenterprise.sdk.node.client.blocking.tx.TxService
 import com.wavesenterprise.sdk.node.domain.DataEntry
 import com.wavesenterprise.sdk.node.domain.TxType
-import com.wavesenterprise.sdk.node.domain.blocking.contract.ContractService
-import com.wavesenterprise.sdk.node.domain.blocking.node.NodeBlockingServiceFactory
-import com.wavesenterprise.sdk.node.domain.blocking.tx.TxService
 import com.wavesenterprise.sdk.node.domain.converter.toContractTransaction
-import com.wavesenterprise.sdk.node.domain.sign.builder.ContractSignRequestBuilder
+import com.wavesenterprise.sdk.node.domain.sign.builder.ContractSignRequestBuilderFactory
 import com.wavesenterprise.sdk.node.domain.tx.ContractTx
 import com.wavesenterprise.sdk.tx.signer.TxSigner
 import java.lang.reflect.Proxy
 
-class ContractBlockingClientFactory<T, S>(
-    private val contractClass: Class<T>?,
+class ContractBlockingClientFactory<S>(
+    private val contractClass: Class<out S>?,
     private val contractInterface: Class<S>,
     private val contractClientProperties: ContractClientParams,
-    private val contractSignRequestBuilder: ContractSignRequestBuilder,
-    converterFactory: JacksonConverterFactory,
-    nodeBlockingServiceFactory: NodeBlockingServiceFactory,
+    private val contractSignRequestBuilderFactory: ContractSignRequestBuilderFactory,
+    private val txSigner: TxSigner? = null,
+    private val converterFactory: JacksonConverterFactory,
+    private val nodeBlockingServiceFactory: NodeBlockingServiceFactory,
 ) {
     private val txService: TxService = nodeBlockingServiceFactory.txService()
     private val contractService: ContractService = nodeBlockingServiceFactory.contractService()
@@ -44,12 +45,26 @@ class ContractBlockingClientFactory<T, S>(
     private val txTypeResolver: TxTypeResolver = TxTypeResolverImpl()
     private val invocationHandlerFactory = ContractHandlerInvocationHandlerFactory(paramsBuilder, txTypeResolver)
 
-    @Suppress("UNCHECKED_CAST")
     fun executeContract(txSigner: TxSigner, receiver: (S) -> Unit): ExecutionContext {
+        return executionContext(txSigner, receiver)
+    }
+
+    fun executeContract(receiver: (S) -> Unit): ExecutionContext {
+        requireNotNull(txSigner) {
+            "TxSigner can not be null"
+        }
+        return executionContext(txSigner, receiver)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun executionContext(
+        txSigner: TxSigner,
+        receiver: (S) -> Unit,
+    ): ExecutionContext {
         var resultTx: ContractTx? = null
         val contractHandlerInvocationHandler =
             invocationHandlerFactory.handleContractInvocation { params: List<DataEntry>, txType: TxType ->
-                val signRequest = contractSignRequestBuilder
+                val signRequest = contractSignRequestBuilderFactory.create()
                     .params(params)
                     .build(txType)
                 val tx = txSigner.sign(signRequest)

@@ -8,25 +8,24 @@ import com.wavesenterprise.sdk.contract.client.invocation.util.createContractTx
 import com.wavesenterprise.sdk.contract.client.invocation.util.user
 import com.wavesenterprise.sdk.contract.jackson.JacksonConverterFactory
 import com.wavesenterprise.sdk.contract.test.Util.randomBytesFromUUID
-import com.wavesenterprise.sdk.node.domain.Address
+import com.wavesenterprise.sdk.node.client.blocking.contract.ContractService
+import com.wavesenterprise.sdk.node.client.blocking.node.NodeBlockingServiceFactory
+import com.wavesenterprise.sdk.node.client.blocking.tx.TxService
 import com.wavesenterprise.sdk.node.domain.DataEntry
 import com.wavesenterprise.sdk.node.domain.DataKey
 import com.wavesenterprise.sdk.node.domain.DataValue
 import com.wavesenterprise.sdk.node.domain.Fee
 import com.wavesenterprise.sdk.node.domain.FeeAssetId
 import com.wavesenterprise.sdk.node.domain.Hash
-import com.wavesenterprise.sdk.node.domain.Password
 import com.wavesenterprise.sdk.node.domain.TxId
 import com.wavesenterprise.sdk.node.domain.TxVersion
-import com.wavesenterprise.sdk.node.domain.blocking.contract.ContractService
-import com.wavesenterprise.sdk.node.domain.blocking.node.NodeBlockingServiceFactory
-import com.wavesenterprise.sdk.node.domain.blocking.tx.TxService
 import com.wavesenterprise.sdk.node.domain.contract.ContractId
 import com.wavesenterprise.sdk.node.domain.contract.ContractImage
 import com.wavesenterprise.sdk.node.domain.contract.ContractName
 import com.wavesenterprise.sdk.node.domain.contract.ContractVersion
 import com.wavesenterprise.sdk.node.domain.sign.SignRequest
 import com.wavesenterprise.sdk.node.domain.sign.builder.ContractSignRequestBuilder
+import com.wavesenterprise.sdk.node.domain.sign.builder.ContractSignRequestBuilderFactory
 import com.wavesenterprise.sdk.node.domain.tx.CallContractTx
 import com.wavesenterprise.sdk.node.domain.tx.CreateContractTx
 import com.wavesenterprise.sdk.tx.signer.TxSigner
@@ -35,7 +34,10 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.slot
 import io.mockk.verify
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
@@ -85,21 +87,21 @@ class ContractBlockingClientFactoryTest {
             key = DataKey("user"),
             value = converterFactory.toDataValueConverter().convert(user),
         )
-        val contractSignRequestBuilder = ContractSignRequestBuilder()
-            .version(txVersion)
-            .senderAddress(senderAddress)
-            .password(password)
-            .fee(fee)
-            .feeAssetId(feeAssetId)
-            .contractVersion(contractVersion)
-            .contractId(contractId)
+        val contractSignRequestBuilderFactory = object : ContractSignRequestBuilderFactory {
+            override fun create(): ContractSignRequestBuilder = ContractSignRequestBuilder()
+                .version(txVersion)
+                .fee(fee)
+                .feeAssetId(feeAssetId)
+                .contractVersion(contractVersion)
+                .contractId(contractId)
+        }
 
         val contractBlockingClientFactory = ContractBlockingClientFactory(
             contractClass = contractClass,
             contractInterface = contractInterface,
             converterFactory = converterFactory,
             contractClientProperties = contractClientParams,
-            contractSignRequestBuilder = contractSignRequestBuilder,
+            contractSignRequestBuilderFactory = contractSignRequestBuilderFactory,
             nodeBlockingServiceFactory = nodeBlockingServiceFactory,
         )
         val signRequestCapture = slot<SignRequest<CallContractTx>>()
@@ -114,8 +116,7 @@ class ContractBlockingClientFactoryTest {
         every { txService.broadcast(capture(txCaptor)) } returns callContractTx
         every { contractService.getContractKey(any()) } returns Optional.empty()
 
-        contractBlockingClientFactory.executeContract(txSigner) {
-            contract ->
+        contractBlockingClientFactory.executeContract(txSigner) { contract ->
             contract.put(user)
         }
 
@@ -134,22 +135,22 @@ class ContractBlockingClientFactoryTest {
             value = converterFactory.toDataValueConverter().convert(user),
         )
 
-        val contractSignRequestBuilder = ContractSignRequestBuilder()
-            .version(txVersion)
-            .senderAddress(senderAddress)
-            .password(password)
-            .fee(fee)
-            .feeAssetId(feeAssetId)
-            .image(image)
-            .imageHash(imageHash)
-            .contractName(contractName)
+        val contractSignRequestBuilderFactory = object : ContractSignRequestBuilderFactory {
+            override fun create(): ContractSignRequestBuilder = ContractSignRequestBuilder()
+                .version(txVersion)
+                .fee(fee)
+                .feeAssetId(feeAssetId)
+                .image(image)
+                .imageHash(imageHash)
+                .contractName(contractName)
+        }
 
         val contractBlockingClientFactory = ContractBlockingClientFactory(
             contractClass = contractClass,
             contractInterface = contractInterface,
             converterFactory = converterFactory,
             contractClientProperties = contractClientParams,
-            contractSignRequestBuilder = contractSignRequestBuilder,
+            contractSignRequestBuilderFactory = contractSignRequestBuilderFactory,
             nodeBlockingServiceFactory = nodeBlockingServiceFactory,
         )
         val signRequestCapture = slot<SignRequest<CreateContractTx>>()
@@ -165,8 +166,7 @@ class ContractBlockingClientFactoryTest {
         every { txService.broadcast(capture(txCaptor)) } returns createContractTx
         every { contractService.getContractKey(any()) } returns Optional.empty()
 
-        contractBlockingClientFactory.executeContract(txSigner) {
-            contract ->
+        contractBlockingClientFactory.executeContract(txSigner) { contract ->
             contract.createContract(user)
         }
 
@@ -174,10 +174,32 @@ class ContractBlockingClientFactoryTest {
         verify { txService.broadcast(createContractTx) }
     }
 
+    @Test
+    fun `should throw exception when txSigner is equals null`() {
+        val contractBlockingClientFactory = ContractBlockingClientFactory(
+            contractClass = contractClass,
+            contractInterface = contractInterface,
+            converterFactory = converterFactory,
+            contractClientProperties = ContractClientParams(localValidationEnabled = true),
+            contractSignRequestBuilderFactory = object : ContractSignRequestBuilderFactory {
+                override fun create(): ContractSignRequestBuilder {
+                    TODO("Not yet implemented")
+                }
+            },
+            nodeBlockingServiceFactory = nodeBlockingServiceFactory,
+            txSigner = null,
+        )
+        assertThrows<IllegalArgumentException> {
+            contractBlockingClientFactory.executeContract { contract ->
+                contract.createContract(user(id = UUID.randomUUID()))
+            }
+        }.apply {
+            assertEquals("TxSigner can not be null", this.message)
+        }
+    }
+
     companion object {
         val txVersion = TxVersion(1)
-        val senderAddress = Address(randomBytesFromUUID())
-        val password = Password("password")
         val fee = Fee(0L)
         val feeAssetId = FeeAssetId.fromTxId(TxId(randomBytesFromUUID()))
         val image = ContractImage("image")
