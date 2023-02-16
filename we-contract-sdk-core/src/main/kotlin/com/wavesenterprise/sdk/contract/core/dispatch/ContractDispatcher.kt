@@ -5,7 +5,7 @@ import com.wavesenterprise.sdk.contract.api.state.ContractFromDataEntryConverter
 import com.wavesenterprise.sdk.contract.core.process.ContractHandlerInvocationExtractor
 import com.wavesenterprise.sdk.contract.core.process.ContractInvocationArgumentsExtractorImpl
 import com.wavesenterprise.sdk.contract.core.state.factory.ContractStateFactory
-import com.wavesenterprise.sdk.node.domain.blocking.contract.ContractService
+import com.wavesenterprise.sdk.node.client.blocking.contract.ContractService
 import com.wavesenterprise.sdk.node.domain.contract.ConnectionRequest
 import com.wavesenterprise.sdk.node.domain.contract.ContractTransactionResponse
 import com.wavesenterprise.sdk.node.domain.contract.ExecutionErrorRequest
