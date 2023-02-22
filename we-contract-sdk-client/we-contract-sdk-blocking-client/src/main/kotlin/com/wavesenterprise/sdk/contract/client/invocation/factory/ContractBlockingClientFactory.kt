@@ -14,6 +14,7 @@ import com.wavesenterprise.sdk.node.client.blocking.node.NodeBlockingServiceFact
 import com.wavesenterprise.sdk.node.client.blocking.tx.TxService
 import com.wavesenterprise.sdk.node.domain.DataEntry
 import com.wavesenterprise.sdk.node.domain.TxType
+import com.wavesenterprise.sdk.node.domain.contract.ContractId
 import com.wavesenterprise.sdk.node.domain.converter.toContractTransaction
 import com.wavesenterprise.sdk.node.domain.sign.builder.ContractSignRequestBuilderFactory
 import com.wavesenterprise.sdk.node.domain.tx.ContractTx
@@ -45,29 +46,40 @@ class ContractBlockingClientFactory<S>(
     private val txTypeResolver: TxTypeResolver = TxTypeResolverImpl()
     private val invocationHandlerFactory = ContractHandlerInvocationHandlerFactory(paramsBuilder, txTypeResolver)
 
-    fun executeContract(txSigner: TxSigner, receiver: (S) -> Unit): ExecutionContext {
-        return executionContext(txSigner, receiver)
+    fun executeContract(contractId: ContractId? = null, txSigner: TxSigner, receiver: (S) -> Unit): ExecutionContext {
+        return executionContext(
+            contractId = contractId,
+            txSigner = txSigner,
+            receiver = receiver,
+        )
     }
 
-    fun executeContract(receiver: (S) -> Unit): ExecutionContext {
+    fun executeContract(contractId: ContractId? = null, receiver: (S) -> Unit): ExecutionContext {
         requireNotNull(txSigner) {
             "TxSigner can not be null"
         }
-        return executionContext(txSigner, receiver)
+        return executionContext(
+            contractId = contractId,
+            txSigner = txSigner,
+            receiver = receiver,
+        )
     }
 
     @Suppress("UNCHECKED_CAST")
     private fun executionContext(
+        contractId: ContractId? = null,
         txSigner: TxSigner,
         receiver: (S) -> Unit,
     ): ExecutionContext {
         var resultTx: ContractTx? = null
         val contractHandlerInvocationHandler =
             invocationHandlerFactory.handleContractInvocation { params: List<DataEntry>, txType: TxType ->
-                val signRequest = contractSignRequestBuilderFactory.create()
+                val signRequestBuilder = contractSignRequestBuilderFactory.create()
                     .params(params)
-                    .build(txType)
-                val tx = txSigner.sign(signRequest)
+                contractId?.let {
+                    signRequestBuilder.contractId(it)
+                }
+                val tx = txSigner.sign(signRequestBuilder.build(txType))
                 handleLocalContractValidation(contractStateFactory, fromDataEntryConverter, tx)
                 resultTx = txService.broadcast(tx)
             }
