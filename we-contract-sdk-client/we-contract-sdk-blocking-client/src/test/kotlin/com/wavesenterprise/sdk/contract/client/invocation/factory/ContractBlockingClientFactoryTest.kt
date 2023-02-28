@@ -16,11 +16,11 @@ import com.wavesenterprise.sdk.node.domain.DataKey
 import com.wavesenterprise.sdk.node.domain.DataValue
 import com.wavesenterprise.sdk.node.domain.Fee
 import com.wavesenterprise.sdk.node.domain.FeeAssetId
-import com.wavesenterprise.sdk.node.domain.Hash
 import com.wavesenterprise.sdk.node.domain.TxId
 import com.wavesenterprise.sdk.node.domain.TxVersion
 import com.wavesenterprise.sdk.node.domain.contract.ContractId
 import com.wavesenterprise.sdk.node.domain.contract.ContractImage
+import com.wavesenterprise.sdk.node.domain.contract.ContractImageHash
 import com.wavesenterprise.sdk.node.domain.contract.ContractName
 import com.wavesenterprise.sdk.node.domain.contract.ContractVersion
 import com.wavesenterprise.sdk.node.domain.sign.SignRequest
@@ -116,7 +116,7 @@ class ContractBlockingClientFactoryTest {
         every { txService.broadcast(capture(txCaptor)) } returns callContractTx
         every { contractService.getContractKey(any()) } returns Optional.empty()
 
-        contractBlockingClientFactory.executeContract(txSigner) { contract ->
+        contractBlockingClientFactory.executeContract(txSigner = txSigner) { contract ->
             contract.put(user)
         }
 
@@ -166,7 +166,7 @@ class ContractBlockingClientFactoryTest {
         every { txService.broadcast(capture(txCaptor)) } returns createContractTx
         every { contractService.getContractKey(any()) } returns Optional.empty()
 
-        contractBlockingClientFactory.executeContract(txSigner) { contract ->
+        contractBlockingClientFactory.executeContract(txSigner = txSigner) { contract ->
             contract.createContract(user)
         }
 
@@ -203,7 +203,7 @@ class ContractBlockingClientFactoryTest {
         val fee = Fee(0L)
         val feeAssetId = FeeAssetId.fromTxId(TxId(randomBytesFromUUID()))
         val image = ContractImage("image")
-        val imageHash = Hash(randomBytesFromUUID())
+        val imageHash = ContractImageHash("imageHash")
         val contractName = ContractName("contractName")
         val contractVersion = ContractVersion(1)
         val contractId = ContractId(TxId(randomBytesFromUUID()))
