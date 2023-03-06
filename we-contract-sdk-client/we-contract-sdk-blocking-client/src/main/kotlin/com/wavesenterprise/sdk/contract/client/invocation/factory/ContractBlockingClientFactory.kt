@@ -1,14 +1,14 @@
 package com.wavesenterprise.sdk.contract.client.invocation.factory
 
 import com.wavesenterprise.sdk.client.local.validator.impl.DefaultLocalContractValidatorImpl
+import com.wavesenterprise.sdk.contract.api.state.ContractFromDataEntryConverter
 import com.wavesenterprise.sdk.contract.client.invocation.ParamsBuilder
 import com.wavesenterprise.sdk.contract.client.invocation.TxTypeResolver
 import com.wavesenterprise.sdk.contract.client.invocation.impl.ParamsBuilderImpl
 import com.wavesenterprise.sdk.contract.client.invocation.impl.TxTypeResolverImpl
+import com.wavesenterprise.sdk.contract.core.converter.factory.ConverterFactory
 import com.wavesenterprise.sdk.contract.core.node.BlockingClientNodeContractStateValuesProvider
 import com.wavesenterprise.sdk.contract.core.state.factory.DefaultBackingMapContractStateFactory
-import com.wavesenterprise.sdk.contract.jackson.JacksonConverterFactory
-import com.wavesenterprise.sdk.contract.jackson.JacksonFromDataEntryConverter
 import com.wavesenterprise.sdk.node.client.blocking.contract.ContractService
 import com.wavesenterprise.sdk.node.client.blocking.node.NodeBlockingServiceFactory
 import com.wavesenterprise.sdk.node.client.blocking.tx.TxService
@@ -27,7 +27,7 @@ class ContractBlockingClientFactory<S>(
     private val contractClientProperties: ContractClientParams,
     private val contractSignRequestBuilderFactory: ContractSignRequestBuilderFactory,
     private val txSigner: TxSigner? = null,
-    private val converterFactory: JacksonConverterFactory,
+    private val converterFactory: ConverterFactory,
     private val nodeBlockingServiceFactory: NodeBlockingServiceFactory,
 ) {
     private val txService: TxService = nodeBlockingServiceFactory.txService()
@@ -99,7 +99,7 @@ class ContractBlockingClientFactory<S>(
 
     private fun handleLocalContractValidation(
         contractStateFactory: DefaultBackingMapContractStateFactory,
-        fromDataEntryConverter: JacksonFromDataEntryConverter,
+        fromDataEntryConverter: ContractFromDataEntryConverter,
         tx: ContractTx
     ) {
         if (contractClientProperties.localValidationEnabled) {
