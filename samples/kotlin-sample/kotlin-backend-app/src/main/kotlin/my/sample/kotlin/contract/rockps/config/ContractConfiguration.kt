@@ -77,7 +77,7 @@ class ContractConfiguration {
             .contractVersion(ContractVersion(contractProperties.contractVersion))
             .version(TxVersion(contractProperties.version))
             .image(ContractImage(contractProperties.image))
-            .imageHash(Hash.fromHexString(contractProperties.imageHash))
+            .imageHash(Hash.fromStringBase58(contractProperties.imageHash))
             .contractName(ContractName(contractProperties.contractName))
 
     @Bean
