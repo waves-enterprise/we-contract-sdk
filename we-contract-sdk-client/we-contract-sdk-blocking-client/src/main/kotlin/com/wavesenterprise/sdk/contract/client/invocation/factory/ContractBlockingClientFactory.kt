@@ -14,11 +14,14 @@ import com.wavesenterprise.sdk.node.client.blocking.node.NodeBlockingServiceFact
 import com.wavesenterprise.sdk.node.client.blocking.tx.TxService
 import com.wavesenterprise.sdk.node.domain.DataEntry
 import com.wavesenterprise.sdk.node.domain.TxType
+import com.wavesenterprise.sdk.node.domain.TxVersion
+import com.wavesenterprise.sdk.node.domain.TxVersionDictionary
 import com.wavesenterprise.sdk.node.domain.contract.ContractId
 import com.wavesenterprise.sdk.node.domain.converter.toContractTransaction
 import com.wavesenterprise.sdk.node.domain.sign.builder.ContractSignRequestBuilderFactory
 import com.wavesenterprise.sdk.node.domain.tx.ContractTx
 import com.wavesenterprise.sdk.tx.signer.TxSigner
+import com.wavesplatform.vst.node.dto.tx.TxFeature
 import java.lang.reflect.Proxy
 
 class ContractBlockingClientFactory<S>(
@@ -79,6 +82,7 @@ class ContractBlockingClientFactory<S>(
                 contractId?.let {
                     signRequestBuilder.contractId(it)
                 }
+                signRequestBuilder.version(TxVersion(TxVersionDictionary.maxVersionSupports(txType, TxFeature.ATOMIC)))
                 val tx = txSigner.sign(signRequestBuilder.build(txType))
                 handleLocalContractValidation(contractStateFactory, fromDataEntryConverter, tx)
                 resultTx = txService.broadcast(tx)
