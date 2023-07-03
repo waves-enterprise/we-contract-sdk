@@ -13,6 +13,7 @@ import com.wavesenterprise.sdk.node.client.blocking.contract.ContractService
 import com.wavesenterprise.sdk.node.client.blocking.node.NodeBlockingServiceFactory
 import com.wavesenterprise.sdk.node.client.blocking.tx.TxService
 import com.wavesenterprise.sdk.node.domain.DataEntry
+import com.wavesenterprise.sdk.node.domain.TxFeature
 import com.wavesenterprise.sdk.node.domain.TxType
 import com.wavesenterprise.sdk.node.domain.TxVersion
 import com.wavesenterprise.sdk.node.domain.TxVersionDictionary
@@ -21,7 +22,6 @@ import com.wavesenterprise.sdk.node.domain.converter.toContractTransaction
 import com.wavesenterprise.sdk.node.domain.sign.builder.ContractSignRequestBuilderFactory
 import com.wavesenterprise.sdk.node.domain.tx.ContractTx
 import com.wavesenterprise.sdk.tx.signer.TxSigner
-import com.wavesplatform.vst.node.dto.tx.TxFeature
 import java.lang.reflect.Proxy
 
 class ContractBlockingClientFactory<S>(
