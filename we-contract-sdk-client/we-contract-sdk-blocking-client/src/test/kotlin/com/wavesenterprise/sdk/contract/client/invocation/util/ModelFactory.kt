@@ -64,9 +64,10 @@ fun callContractTx(
 
 fun createContractTx(
     params: List<DataEntry> = emptyList(),
+    txId: TxId = TxId(randomBytesFromUUID()),
 ) =
     CreateContractTx(
-        id = TxId(randomBytesFromUUID()),
+        id = txId,
         senderPublicKey = PublicKey(randomBytesFromUUID()),
         params = params,
         fee = Fee(0L),

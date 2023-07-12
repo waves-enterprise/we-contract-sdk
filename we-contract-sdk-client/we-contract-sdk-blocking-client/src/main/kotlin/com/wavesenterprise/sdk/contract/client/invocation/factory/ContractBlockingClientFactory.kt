@@ -8,6 +8,7 @@ import com.wavesenterprise.sdk.contract.client.invocation.impl.ParamsBuilderImpl
 import com.wavesenterprise.sdk.contract.client.invocation.impl.TxTypeResolverImpl
 import com.wavesenterprise.sdk.contract.core.converter.factory.ConverterFactory
 import com.wavesenterprise.sdk.contract.core.node.BlockingClientNodeContractStateValuesProvider
+import com.wavesenterprise.sdk.contract.core.state.LocalValidationContextManager
 import com.wavesenterprise.sdk.contract.core.state.factory.DefaultBackingMapContractStateFactory
 import com.wavesenterprise.sdk.node.client.blocking.contract.ContractService
 import com.wavesenterprise.sdk.node.client.blocking.node.NodeBlockingServiceFactory
@@ -32,6 +33,7 @@ class ContractBlockingClientFactory<S>(
     private val txSigner: TxSigner? = null,
     private val converterFactory: ConverterFactory,
     private val nodeBlockingServiceFactory: NodeBlockingServiceFactory,
+    private val localValidationContextManager: LocalValidationContextManager,
 ) {
     private val txService: TxService = nodeBlockingServiceFactory.txService()
     private val contractService: ContractService = nodeBlockingServiceFactory.contractService()
@@ -106,15 +108,18 @@ class ContractBlockingClientFactory<S>(
         fromDataEntryConverter: ContractFromDataEntryConverter,
         tx: ContractTx
     ) {
-        if (contractClientProperties.localValidationEnabled) {
-            contractClass?.also {
-                DefaultLocalContractValidatorImpl(
-                    contractHandlerType = contractClass,
-                    contractStateFactory = contractStateFactory,
-                    contractFromDataEntryConverter = fromDataEntryConverter,
-                ).validate(tx.toContractTransaction())
-            } ?: throw IllegalArgumentException("Contract implementation is required for local validation")
+        if (!contractClientProperties.localValidationEnabled) {
+            return
         }
+        val contractTransaction = tx.toContractTransaction()
+        contractClass?.also {
+            DefaultLocalContractValidatorImpl(
+                contractHandlerType = contractClass,
+                contractStateFactory = contractStateFactory,
+                contractFromDataEntryConverter = fromDataEntryConverter,
+                localValidationContextManager = localValidationContextManager,
+            ).validate(contractTransaction)
+        } ?: throw IllegalArgumentException("Contract implementation is required for local validation")
     }
 }
 
