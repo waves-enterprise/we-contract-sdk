@@ -6,6 +6,8 @@ import com.wavesenterprise.sdk.contract.client.invocation.MyContractHandlerImpl
 import com.wavesenterprise.sdk.contract.client.invocation.util.callContractTx
 import com.wavesenterprise.sdk.contract.client.invocation.util.createContractTx
 import com.wavesenterprise.sdk.contract.client.invocation.util.user
+import com.wavesenterprise.sdk.contract.core.state.LocalValidationContextManager
+import com.wavesenterprise.sdk.contract.core.state.ThreadLocalLocalValidationContextManager
 import com.wavesenterprise.sdk.contract.jackson.JacksonConverterFactory
 import com.wavesenterprise.sdk.contract.test.Util.randomBytesFromUUID
 import com.wavesenterprise.sdk.node.client.blocking.contract.ContractService
@@ -55,6 +57,8 @@ class ContractBlockingClientFactoryTest {
 
     private val objectMapper = jacksonObjectMapper()
 
+    private val localValidationContextManager: LocalValidationContextManager = ThreadLocalLocalValidationContextManager()
+
     @MockK
     lateinit var txSigner: TxSigner
 
@@ -95,7 +99,6 @@ class ContractBlockingClientFactoryTest {
                 .contractVersion(contractVersion)
                 .contractId(contractId)
         }
-
         val contractBlockingClientFactory = ContractBlockingClientFactory(
             contractClass = contractClass,
             contractInterface = contractInterface,
@@ -103,6 +106,7 @@ class ContractBlockingClientFactoryTest {
             contractClientProperties = contractClientParams,
             contractSignRequestBuilderFactory = contractSignRequestBuilderFactory,
             nodeBlockingServiceFactory = nodeBlockingServiceFactory,
+            localValidationContextManager = localValidationContextManager,
         )
         val signRequestCapture = slot<SignRequest<CallContractTx>>()
         val txCaptor = slot<CallContractTx>()
@@ -152,6 +156,7 @@ class ContractBlockingClientFactoryTest {
             contractClientProperties = contractClientParams,
             contractSignRequestBuilderFactory = contractSignRequestBuilderFactory,
             nodeBlockingServiceFactory = nodeBlockingServiceFactory,
+            localValidationContextManager = localValidationContextManager,
         )
         val signRequestCapture = slot<SignRequest<CreateContractTx>>()
         val txCaptor = slot<CreateContractTx>()
@@ -188,6 +193,7 @@ class ContractBlockingClientFactoryTest {
             },
             nodeBlockingServiceFactory = nodeBlockingServiceFactory,
             txSigner = null,
+            localValidationContextManager = localValidationContextManager,
         )
         assertThrows<IllegalArgumentException> {
             contractBlockingClientFactory.executeContract { contract ->
