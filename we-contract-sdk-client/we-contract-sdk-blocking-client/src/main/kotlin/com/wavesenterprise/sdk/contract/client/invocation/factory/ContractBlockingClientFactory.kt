@@ -79,7 +79,7 @@ class ContractBlockingClientFactory<S>(
         var resultTx: ContractTx? = null
         val contractHandlerInvocationHandler =
             invocationHandlerFactory.handleContractInvocation { params: List<DataEntry>, txType: TxType ->
-                val signRequestBuilder = contractSignRequestBuilderFactory.create()
+                val signRequestBuilder = contractSignRequestBuilderFactory.create(contractId)
                     .params(params)
                 contractId?.let {
                     signRequestBuilder.contractId(it)

@@ -91,14 +91,15 @@ class ContractBlockingClientFactoryTest {
             key = DataKey("user"),
             value = converterFactory.toDataValueConverter().convert(user),
         )
-        val contractSignRequestBuilderFactory = object : ContractSignRequestBuilderFactory {
-            override fun create(): ContractSignRequestBuilder = ContractSignRequestBuilder()
-                .version(txVersion)
-                .fee(fee)
-                .feeAssetId(feeAssetId)
-                .contractVersion(contractVersion)
-                .contractId(contractId)
-        }
+        val contractSignRequestBuilderFactory =
+            object : ContractSignRequestBuilderFactory {
+                override fun create(contractId: ContractId?): ContractSignRequestBuilder = ContractSignRequestBuilder()
+                    .version(txVersion)
+                    .fee(fee)
+                    .feeAssetId(feeAssetId)
+                    .contractVersion(contractVersion)
+                    .contractId(Companion.contractId)
+            }
         val contractBlockingClientFactory = ContractBlockingClientFactory(
             contractClass = contractClass,
             contractInterface = contractInterface,
@@ -140,7 +141,7 @@ class ContractBlockingClientFactoryTest {
         )
 
         val contractSignRequestBuilderFactory = object : ContractSignRequestBuilderFactory {
-            override fun create(): ContractSignRequestBuilder = ContractSignRequestBuilder()
+            override fun create(contractId: ContractId?): ContractSignRequestBuilder = ContractSignRequestBuilder()
                 .version(txVersion)
                 .fee(fee)
                 .feeAssetId(feeAssetId)
@@ -187,7 +188,7 @@ class ContractBlockingClientFactoryTest {
             converterFactory = converterFactory,
             contractClientProperties = ContractClientParams(localValidationEnabled = true),
             contractSignRequestBuilderFactory = object : ContractSignRequestBuilderFactory {
-                override fun create(): ContractSignRequestBuilder {
+                override fun create(contractId: ContractId?): ContractSignRequestBuilder {
                     TODO("Not yet implemented")
                 }
             },
