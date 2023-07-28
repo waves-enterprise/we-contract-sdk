@@ -12,7 +12,7 @@ class ParamsBuilderImpl(
     private val converter: ContractToDataValueConverter,
 ) : ParamsBuilder {
 
-    override fun build(method: Method, args: Array<out Any>): List<DataEntry> {
+    override fun build(method: Method, args: Array<out Any>?): List<DataEntry> {
         val actionName = method.name
         val invokeParams = buildList {
             add(
@@ -22,7 +22,7 @@ class ParamsBuilderImpl(
                     value = converter.convert(actionName),
                 )
             )
-            addAll(getInvokeParams(method.parameters, args))
+            args?.also { addAll(getInvokeParams(method.parameters, args)) }
         }
         return invokeParams
     }
