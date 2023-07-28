@@ -63,7 +63,7 @@ internal class ParamsBuilderImplTest {
                 TestProcessor::testActionCallBoolean.javaMethod!! to arrayOf(true),
                 TestProcessor::testActionCallInteger.javaMethod!! to arrayOf(1),
                 TestProcessor::testActionCallString.javaMethod!! to arrayOf("test"),
-                TestProcessor::testActionCallWithoutParams.javaMethod!! to arrayOf(),
+                TestProcessor::testActionCallWithoutParams.javaMethod!! to null,
                 TestProcessor::testActionCallWithSeveralParameters.javaMethod!! to arrayOf(TestObject(), 1, "str", true)
             )
     }

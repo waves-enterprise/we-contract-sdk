@@ -13,7 +13,7 @@ class ContractHandlerInvocationHandler(
     override fun invoke(
         proxy: Any,
         method: Method,
-        args: Array<out Any>,
+        args: Array<out Any>?,
     ): Any {
         val params = paramsBuilder.build(method, args)
         val txType = txTypeResolver.resolve(method)
