@@ -96,12 +96,57 @@ nexusStaging {
 }
 
 subprojects {
+    apply(plugin = "maven-publish")
+
+    publishing {
+        repositories {
+            if (weMavenUser != null && weMavenPassword != null) {
+                maven {
+                    name = "WE-artifacts"
+                    afterEvaluate {
+                        url = uri(
+                            "$weMavenBasePath${
+                                if (project.version.toString()
+                                        .endsWith("-SNAPSHOT")
+                                ) "maven-snapshots" else "maven-releases"
+                            }"
+                        )
+                    }
+                    credentials {
+                        username = weMavenUser
+                        password = weMavenPassword
+                    }
+                }
+            }
+
+            if (sonaTypeMavenPassword != null && sonaTypeMavenUser != null) {
+                maven {
+                    name = "SonaType-maven-central-staging"
+                    val releasesUrl = uri("$sonaTypeBasePath/service/local/staging/deploy/maven2/")
+                    afterEvaluate {
+                        url = if (version.toString()
+                                .endsWith("SNAPSHOT")
+                        ) throw kotlin.Exception("shouldn't publish snapshot") else releasesUrl
+                    }
+                    credentials {
+                        username = sonaTypeMavenUser
+                        password = sonaTypeMavenPassword
+                    }
+                }
+            }
+        }
+
+    }
+}
+
+configure(
+    subprojects.filter { it.name != "we-contract-sdk-bom" }
+) {
     apply(plugin = "io.spring.dependency-management")
     apply(plugin = "kotlin")
     apply(plugin = "io.gitlab.arturbosch.detekt")
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
     apply(plugin = "jacoco")
-    apply(plugin = "maven-publish")
     apply(plugin = "signing")
     apply(plugin = "org.jetbrains.dokka")
 
@@ -158,42 +203,6 @@ subprojects {
     }
 
     publishing {
-        repositories {
-            if (weMavenUser != null && weMavenPassword != null) {
-                maven {
-                    name = "WE-artifacts"
-                    afterEvaluate {
-                        url = uri("$weMavenBasePath${
-                            if (project.version.toString()
-                                    .endsWith("-SNAPSHOT")
-                            ) "maven-snapshots" else "maven-releases"
-                        }")
-                    }
-                    credentials {
-                        username = weMavenUser
-                        password = weMavenPassword
-                    }
-                }
-            }
-
-            if (sonaTypeMavenPassword != null && sonaTypeMavenUser != null) {
-                maven {
-                    name = "SonaType-maven-central-staging"
-                    val releasesUrl = uri("$sonaTypeBasePath/service/local/staging/deploy/maven2/")
-                    afterEvaluate {
-                        url = if (version.toString()
-                                .endsWith("SNAPSHOT")
-                        ) throw kotlin.Exception("shouldn't publish snapshot") else releasesUrl
-                    }
-                    credentials {
-                        username = sonaTypeMavenUser
-                        password = sonaTypeMavenPassword
-                    }
-                }
-            }
-        }
-
-
         publications {
             create<MavenPublication>("mavenJava") {
                 from(components["java"])

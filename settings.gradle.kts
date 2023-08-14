@@ -37,6 +37,8 @@ pluginManagement {
 rootProject.name = "we-contract-sdk"
 
 include(
+    "we-contract-sdk-bom",
+
     "we-contract-sdk-api",
     "we-contract-sdk-core",
     "we-contract-sdk-grpc",
