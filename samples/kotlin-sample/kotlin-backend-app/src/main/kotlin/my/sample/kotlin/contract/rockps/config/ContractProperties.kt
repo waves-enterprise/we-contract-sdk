@@ -8,7 +8,6 @@ import org.springframework.boot.context.properties.ConstructorBinding
 data class ContractProperties(
     val senderAddress: String,
     val fee: Long,
-    val contractId: String,
     val contractVersion: Int,
     val version: Int,
     val image: String,

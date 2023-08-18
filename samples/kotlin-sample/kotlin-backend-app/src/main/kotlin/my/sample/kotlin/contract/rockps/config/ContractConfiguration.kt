@@ -8,24 +8,25 @@ import com.fasterxml.jackson.module.kotlin.KotlinFeature
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.wavesenterprise.sdk.contract.client.invocation.factory.ContractBlockingClientFactory
 import com.wavesenterprise.sdk.contract.client.invocation.factory.ContractClientParams
+import com.wavesenterprise.sdk.contract.core.state.ThreadLocalLocalValidationContextManager
 import com.wavesenterprise.sdk.contract.jackson.JacksonConverterFactory
+import com.wavesenterprise.sdk.node.client.blocking.node.NodeBlockingServiceFactory
+import com.wavesenterprise.sdk.node.client.blocking.tx.TxService
 import com.wavesenterprise.sdk.node.client.feign.FeignNodeClientParams
 import com.wavesenterprise.sdk.node.client.feign.FeignProperties
 import com.wavesenterprise.sdk.node.client.feign.FeignWeApiFactory
 import com.wavesenterprise.sdk.node.client.feign.factory.FeignNodeServiceFactory
 import com.wavesenterprise.sdk.node.client.feign.tx.FeignTxService
 import com.wavesenterprise.sdk.node.client.feign.tx.WeTxApiFeign
-import com.wavesenterprise.sdk.node.domain.Address
 import com.wavesenterprise.sdk.node.domain.Fee
-import com.wavesenterprise.sdk.node.domain.Hash
 import com.wavesenterprise.sdk.node.domain.TxVersion
-import com.wavesenterprise.sdk.node.domain.blocking.node.NodeBlockingServiceFactory
-import com.wavesenterprise.sdk.node.domain.blocking.tx.TxService
 import com.wavesenterprise.sdk.node.domain.contract.ContractId
 import com.wavesenterprise.sdk.node.domain.contract.ContractImage
+import com.wavesenterprise.sdk.node.domain.contract.ContractImageHash
 import com.wavesenterprise.sdk.node.domain.contract.ContractName
 import com.wavesenterprise.sdk.node.domain.contract.ContractVersion
 import com.wavesenterprise.sdk.node.domain.sign.builder.ContractSignRequestBuilder
+import com.wavesenterprise.sdk.node.domain.sign.builder.ContractSignRequestBuilderFactory
 import com.wavesenterprise.sdk.tx.signer.node.factory.TxServiceTxSignerFactory
 import feign.Logger
 import my.sample.kotlin.contract.rockps.RockPaperScissorsContractImpl
@@ -54,8 +55,12 @@ class ContractConfiguration {
             contractInterface = RockPaperScissorsContract::class.java,
             converterFactory = converterFactory,
             contractClientProperties = contractClientParams,
-            contractSignRequestBuilder = contractSignRequestBuilder,
+            contractSignRequestBuilderFactory = object : ContractSignRequestBuilderFactory {
+                override fun create(contractId: ContractId?): ContractSignRequestBuilder = contractSignRequestBuilder
+
+            },
             nodeBlockingServiceFactory = nodeBlockingServiceFactory,
+            localValidationContextManager = ThreadLocalLocalValidationContextManager(),
         )
 
     @Bean
@@ -71,13 +76,11 @@ class ContractConfiguration {
         contractProperties: ContractProperties,
     ) =
         ContractSignRequestBuilder()
-            .senderAddress(Address.fromBase58(contractProperties.senderAddress))
             .fee(Fee(0L))
-            .contractId(ContractId.fromBase58(contractProperties.contractId))
             .contractVersion(ContractVersion(contractProperties.contractVersion))
             .version(TxVersion(contractProperties.version))
             .image(ContractImage(contractProperties.image))
-            .imageHash(Hash.fromStringBase58(contractProperties.imageHash))
+            .imageHash(ContractImageHash.fromString(contractProperties.imageHash))
             .contractName(ContractName(contractProperties.contractName))
 
     @Bean

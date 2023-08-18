@@ -16,14 +16,16 @@ val junitVersion: String by project
 val apacheCommonsCodecVersion: String by project
 val springBootVersion: String by project
 val feignVersion: String by project
-val nodeClientVersion: String by project
+val weNodeClientVersion: String by project
 
 dependencies {
     api(project(":kotlin-sample:kotlin-contract"))
     implementation("com.wavesenterprise:we-contract-sdk-blocking-client:$weContractSdkVersion")
-    implementation("com.wavesenterprise:we-node-client-grpc-blocking-client:$nodeClientVersion")
-    implementation("com.wavesenterprise:we-node-client-feign-client:$nodeClientVersion")
-    implementation("com.wavesenterprise:we-tx-signer-node:$nodeClientVersion")
+    implementation("com.wavesenterprise:we-contract-sdk-jackson:$weContractSdkVersion")
+
+    implementation("com.wavesenterprise:we-node-client-grpc-blocking-client:$weNodeClientVersion")
+    implementation("com.wavesenterprise:we-node-client-feign-client:$weNodeClientVersion")
+    implementation("com.wavesenterprise:we-tx-signer-node:$weNodeClientVersion")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     implementation("commons-codec:commons-codec:$apacheCommonsCodecVersion")
