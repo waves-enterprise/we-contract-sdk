@@ -7,7 +7,6 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 val kotlinVersion: String by project
 val kotlinCoroutinesVersion: String by project
 val reactorVersion: String by project
-val springBootVersion: String by project
 val springCloudVersion: String by project
 val jacocoToolVersion: String by project
 val logbackVersion: String by project
@@ -21,7 +20,7 @@ val ioGrpcVersion: String by project
 val ioGrpcKotlinVersion: String by project
 val protobufVersion: String by project
 
-val junitPlatformLauncherVersion: String by project
+val junitVersion: String by project
 val mockkVersion: String by project
 val springMockkVersion: String by project
 
@@ -46,8 +45,6 @@ plugins {
     `maven-publish`
     signing
     id("io.codearte.nexus-staging")
-    kotlin("plugin.spring") apply false
-    id("org.springframework.boot") apply false
     id("io.spring.dependency-management") apply false
     id("io.gitlab.arturbosch.detekt") apply false
     id("org.jlleitschuh.gradle.ktlint") apply false
@@ -262,51 +259,25 @@ configure(
     // todo bom without spring boot
     the<DependencyManagementExtension>().apply {
         imports {
-            mavenBom("org.springframework.boot:spring-boot-dependencies:$springBootVersion")
-            mavenBom("org.springframework.cloud:spring-cloud-dependencies:$springCloudVersion")
-            mavenBom("org.springframework.boot:spring-boot-dependencies:$springBootVersion") {
-                bomProperty("kotlin.version", kotlinVersion)
-            }
+            mavenBom("com.wavesenterprise:we-node-client-bom:$weNodeClientVersion")
+
+            mavenBom("org.jetbrains.kotlin:kotlin-bom:$kotlinVersion")
+            mavenBom("org.jetbrains.kotlinx:kotlinx-coroutines-bom:$kotlinCoroutinesVersion")
+            mavenBom("com.fasterxml.jackson:jackson-bom:$jacksonVersion")
+            mavenBom("io.grpc:grpc-bom:$ioGrpcVersion")
+
+            mavenBom("org.junit:junit-bom:$junitVersion")
         }
         dependencies {
-            dependency("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:$kotlinCoroutinesVersion")
-            dependency("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$kotlinCoroutinesVersion")
-            dependency("org.jetbrains.kotlinx:kotlinx-coroutines-slf4j:$kotlinCoroutinesVersion")
-
             dependency("javax.annotation:javax.annotation-api:$javaxAnnotationApiVersion")
 
-            dependency("io.projectreactor:reactor-core:$reactorVersion")
-
-            dependency("com.google.protobuf:protobuf-java:$protobufVersion")
-            dependency("io.grpc:grpc-core:$ioGrpcVersion")
-            dependency("io.grpc:grpc-stub:$ioGrpcVersion")
-            dependency("io.grpc:grpc-netty:$ioGrpcVersion")
-            dependency("io.grpc:grpc-protobuf:$ioGrpcVersion")
-
-            dependency("com.google.protobuf:protobuf-kotlin:$protobufVersion")
-            dependency("io.grpc:grpc-kotlin-stub:$ioGrpcKotlinVersion")
-
+            dependency("com.google.guava:guava:$guavaVersion")
             dependency("ch.qos.logback:logback-classic:$logbackVersion")
             dependency("org.apache.commons:commons-lang3:$commonsLangVersion")
 
-            dependency("io.ktor:ktor-client-core:$ktorVersion")
-            dependency("io.ktor:ktor-client-cio:$ktorVersion")
-            dependency("io.ktor:ktor-client-logging:$ktorVersion")
-            dependency("io.ktor:ktor-client-content-negotiation:$ktorVersion")
-            dependency("io.ktor:ktor-serialization-jackson:$ktorVersion")
-
-            dependency("org.junit.platform:junit-platform-launcher:$junitPlatformLauncherVersion")
             dependency("io.mockk:mockk:$mockkVersion")
             dependency("com.ninja-squad:springmockk:$springMockkVersion")
             dependency("com.frimastudio:slf4j-kotlin-extensions:$sl4jExtVersion")
-            dependency("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
-            dependency("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
-            dependency("com.google.guava:guava:$guavaVersion")
-
-            dependency("com.wavesenterprise:we-node-client-domain:$weNodeClientVersion")
-            dependency("com.wavesenterprise:we-node-client-blocking-client:$weNodeClientVersion")
-            dependency("com.wavesenterprise:we-node-client-grpc-blocking-client:$weNodeClientVersion")
-            dependency("com.wavesenterprise:we-tx-signer-api:$weNodeClientVersion")
         }
     }
 
