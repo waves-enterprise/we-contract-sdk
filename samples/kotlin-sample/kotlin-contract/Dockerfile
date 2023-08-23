@@ -1,4 +1,4 @@
-FROM registry.weintegrator.com/library/openjdk11:11-jre-alpine-67c95812
+FROM openjdk:11.0-jdk-slim
 MAINTAINER Waves Enterprise <>
 
 ENV JAVA_MEM="-Xmx256M"
