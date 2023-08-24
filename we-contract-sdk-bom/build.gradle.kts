@@ -17,7 +17,7 @@ dependencies {
 
 publishing {
     publications {
-        create<MavenPublication>("we-node-client-bom") {
+        create<MavenPublication>("we-contract-sdk-bom") {
             from(components["javaPlatform"])
         }
     }
