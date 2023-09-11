@@ -1,6 +1,7 @@
 package com.wavesenterprise.sdk.contract.client.invocation.factory
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.wavesenterprise.sdk.client.local.validator.LocalContractValidation
 import com.wavesenterprise.sdk.contract.client.invocation.MyContractHandler
 import com.wavesenterprise.sdk.contract.client.invocation.MyContractHandlerImpl
 import com.wavesenterprise.sdk.contract.client.invocation.util.callContractTx
@@ -84,7 +85,7 @@ class ContractBlockingClientFactoryTest {
     @ParameterizedTest
     @MethodSource("contractClientParams")
     fun `should create client and broadcast callContractTx`(
-        contractClientParams: ContractClientParams,
+        LocalContractValidation: LocalContractValidation,
     ) {
         val user = user(id = UUID.randomUUID())
         val userDataEntry = DataEntry(
@@ -104,7 +105,7 @@ class ContractBlockingClientFactoryTest {
             contractClass = contractClass,
             contractInterface = contractInterface,
             converterFactory = converterFactory,
-            contractClientProperties = contractClientParams,
+            localContractValidation = LocalContractValidation,
             contractSignRequestBuilderFactory = contractSignRequestBuilderFactory,
             nodeBlockingServiceFactory = nodeBlockingServiceFactory,
             localValidationContextManager = localValidationContextManager,
@@ -132,7 +133,7 @@ class ContractBlockingClientFactoryTest {
     @ParameterizedTest
     @MethodSource("contractClientParams")
     fun `should create client and broadcast createContractTx`(
-        contractClientParams: ContractClientParams,
+        localContractValidation: LocalContractValidation,
     ) {
         val user = user(id = UUID.randomUUID())
         val userDataEntry = DataEntry(
@@ -154,7 +155,7 @@ class ContractBlockingClientFactoryTest {
             contractClass = contractClass,
             contractInterface = contractInterface,
             converterFactory = converterFactory,
-            contractClientProperties = contractClientParams,
+            localContractValidation = localContractValidation,
             contractSignRequestBuilderFactory = contractSignRequestBuilderFactory,
             nodeBlockingServiceFactory = nodeBlockingServiceFactory,
             localValidationContextManager = localValidationContextManager,
@@ -186,7 +187,9 @@ class ContractBlockingClientFactoryTest {
             contractClass = contractClass,
             contractInterface = contractInterface,
             converterFactory = converterFactory,
-            contractClientProperties = ContractClientParams(localValidationEnabled = true),
+            localContractValidation = object : LocalContractValidation {
+                override fun isEnabled(): Boolean = true
+            },
             contractSignRequestBuilderFactory = object : ContractSignRequestBuilderFactory {
                 override fun create(contractId: ContractId?): ContractSignRequestBuilder {
                     TODO("Not yet implemented")
@@ -217,8 +220,12 @@ class ContractBlockingClientFactoryTest {
 
         @JvmStatic
         fun contractClientParams(): Stream<Arguments> = Stream.of(
-            Arguments.of(ContractClientParams(localValidationEnabled = true)),
-            Arguments.of(ContractClientParams(localValidationEnabled = false)),
+            Arguments.of(object : LocalContractValidation {
+                override fun isEnabled(): Boolean = true
+            }),
+            Arguments.of(object : LocalContractValidation {
+                override fun isEnabled(): Boolean = false
+            }),
         )
     }
 }

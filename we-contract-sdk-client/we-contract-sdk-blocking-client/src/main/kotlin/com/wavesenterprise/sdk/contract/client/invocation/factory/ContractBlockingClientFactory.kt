@@ -1,5 +1,6 @@
 package com.wavesenterprise.sdk.contract.client.invocation.factory
 
+import com.wavesenterprise.sdk.client.local.validator.LocalContractValidation
 import com.wavesenterprise.sdk.client.local.validator.impl.DefaultLocalContractValidatorImpl
 import com.wavesenterprise.sdk.contract.api.state.ContractFromDataEntryConverter
 import com.wavesenterprise.sdk.contract.client.invocation.ParamsBuilder
@@ -28,7 +29,7 @@ import java.lang.reflect.Proxy
 class ContractBlockingClientFactory<S>(
     private val contractClass: Class<out S>?,
     private val contractInterface: Class<S>,
-    private val contractClientProperties: ContractClientParams,
+    private val localContractValidation: LocalContractValidation,
     private val contractSignRequestBuilderFactory: ContractSignRequestBuilderFactory,
     private val txSigner: TxSigner? = null,
     private val converterFactory: ConverterFactory,
@@ -108,7 +109,7 @@ class ContractBlockingClientFactory<S>(
         fromDataEntryConverter: ContractFromDataEntryConverter,
         tx: ContractTx
     ) {
-        if (!contractClientProperties.localValidationEnabled) {
+        if (!localContractValidation.isEnabled()) {
             return
         }
         val contractTransaction = tx.toContractTransaction()
