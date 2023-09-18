@@ -6,6 +6,7 @@ import com.wavesenterprise.sdk.contract.api.exception.ContractPreValidationExcep
 import com.wavesenterprise.sdk.contract.api.state.NodeContractStateValuesProvider
 import com.wavesenterprise.sdk.contract.client.invocation.util.callContractTransaction
 import com.wavesenterprise.sdk.contract.client.invocation.util.user
+import com.wavesenterprise.sdk.contract.core.state.LocalValidationContextManager
 import com.wavesenterprise.sdk.contract.core.state.factory.DefaultBackingMapContractStateFactory
 import com.wavesenterprise.sdk.contract.jackson.JacksonContractToDataValueConverter
 import com.wavesenterprise.sdk.contract.jackson.JacksonFromDataEntryConverter
@@ -38,6 +39,9 @@ internal class DefaultLocalContractValidatorImplTest {
     @MockK
     lateinit var nodeContractStateValuesProvider: NodeContractStateValuesProvider
 
+    @MockK(relaxed = true)
+    lateinit var localValidationContextManager: LocalValidationContextManager
+
     private val contractFromDataEntryConverter = JacksonFromDataEntryConverter(jacksonObjectMapper())
     private val contractToDataValueConverter = JacksonContractToDataValueConverter(jacksonObjectMapper())
 
@@ -53,6 +57,7 @@ internal class DefaultLocalContractValidatorImplTest {
                 contractToDataValueConverter = contractToDataValueConverter,
             ),
             contractFromDataEntryConverter = contractFromDataEntryConverter,
+            localValidationContextManager = localValidationContextManager,
         )
     }
 

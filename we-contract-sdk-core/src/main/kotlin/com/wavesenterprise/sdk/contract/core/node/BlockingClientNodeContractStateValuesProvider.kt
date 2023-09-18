@@ -1,8 +1,8 @@
 package com.wavesenterprise.sdk.contract.core.node
 
 import com.wavesenterprise.sdk.contract.api.state.NodeContractStateValuesProvider
+import com.wavesenterprise.sdk.node.client.blocking.contract.ContractService
 import com.wavesenterprise.sdk.node.domain.DataEntry
-import com.wavesenterprise.sdk.node.domain.blocking.contract.ContractService
 import com.wavesenterprise.sdk.node.domain.contract.ContractId
 import com.wavesenterprise.sdk.node.domain.contract.keys.ContractKeyRequest
 import com.wavesenterprise.sdk.node.domain.contract.keys.ContractKeysRequest

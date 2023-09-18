@@ -64,7 +64,7 @@ val contractSignRequestBuilder = ContractSignRequestBuilder()
     .contractVersion(ContractVersion(contractProperties.contractVersion))
     .version(TxVersion(contractProperties.version))
     .image(ContractImage(contractProperties.image))
-    .imageHash(Hash.fromHexString(contractProperties.imageHash))
+    .imageHash(Hash.fromStringBase58(contractProperties.imageHash))
     .contractName(ContractName(contractProperties.contractName))
 val contractClientParams = ContractClientParams(localValidationEnabled = true)
 ```
@@ -79,7 +79,7 @@ val contractClientParams = ContractClientParams(localValidationEnabled = true)
     .contractVersion(ContractVersion(contractProperties.contractVersion))
     .version(TxVersion(contractProperties.version))
     .image(ContractImage(contractProperties.image))
-    .imageHash(Hash.fromHexString(contractProperties.imageHash))
+    .imageHash(Hash.fromStringBase58(contractProperties.imageHash))
     .contractName(ContractName(contractProperties.contractName)) 
 ```
 

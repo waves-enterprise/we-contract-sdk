@@ -5,8 +5,9 @@ import my.sample.kotlin.contract.rockps.controller.dto.PlayRequestDto
 import my.sample.kotlin.contract.rockps.controller.dto.RevealRequestDto
 import my.sample.kotlin.contract.rockps.controller.dto.toContractDto
 import my.sample.kotlin.contract.rockps.controller.dto.toDto
+import my.sample.kotlin.contract.rockps.game.request.PlayRequest
 import my.sample.kotlin.contract.rockps.service.GameService
-import org.springframework.http.ResponseEntity
+import my.sample.kotlin.contract.rockps.util.hash
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
@@ -42,4 +43,9 @@ class GameController(
         @RequestHeader("X-we-tx-sender-contract-id") contractId: String,
         @RequestBody revealRequest: RevealRequestDto,
     ) = gameService.reveal(revealRequest.toContractDto(), address, password, contractId).toDto()
+
+    fun PlayRequestDto.toContractDto() =
+        PlayRequest(
+            hashedAnswer = hash("${answer.name}_$salt"),
+        )
 }

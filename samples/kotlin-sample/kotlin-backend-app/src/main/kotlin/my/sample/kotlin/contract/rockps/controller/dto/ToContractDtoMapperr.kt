@@ -15,10 +15,6 @@ fun PlayerDto.toContractDto() =
         address = address,
     )
 
-fun PlayRequestDto.toContractDto() =
-    PlayRequest(
-        hashedAnswer = hashedAnswer,
-    )
 
 fun RevealRequestDto.toContractDto() =
     RevealRequest(
