@@ -37,8 +37,9 @@ val sonaTypeMavenPassword: String? by project
 val weMavenBasePath = "https://artifacts.wavesenterprise.com/repository/"
 
 val sonaTypeBasePath = "https://s01.oss.sonatype.org"
-val gitHubProject = "waves-enterprise/we-contract-sdk"
-val githubUrl = "https://github.com/$gitHubProject"
+
+val gitHubProject: String by project
+val githubUrl: String by project
 
 plugins {
     kotlin("jvm") apply false
