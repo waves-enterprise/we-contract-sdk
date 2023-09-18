@@ -238,9 +238,9 @@ configure(
                             email.set("kpote3@gmail.com")
                         }
                         developer {
-                            id.set("bekirev")
-                            name.set("Artem Bekirev")
-                            email.set("abekirev@gmail.com")
+                            id.set("donyfutura")
+                            name.set("Daniil Georgiev")
+                            email.set("donyfutura@gmail.com")
                         }
                     }
                 }
