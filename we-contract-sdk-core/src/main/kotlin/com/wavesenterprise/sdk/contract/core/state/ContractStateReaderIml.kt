@@ -13,6 +13,7 @@ import com.wavesenterprise.sdk.contract.core.state.mapping.ReadMappingForType
 import com.wavesenterprise.sdk.contract.core.state.mapping.ReadMappingForTypeReference
 import com.wavesenterprise.sdk.node.domain.DataEntry
 import com.wavesenterprise.sdk.node.domain.contract.ContractId
+import com.wavesenterprise.sdk.node.exception.specific.DataKeyNotExistException
 import java.util.Optional
 
 class ContractStateReaderIml(
@@ -90,7 +91,11 @@ class ContractStateReaderIml(
     }
 
     private fun getKeyValue(key: String): DataEntry? =
-        backingMap[key] ?: nodeContractStateValuesProvider.getForKeyAsNullable(contractId, key)?.also { backingMap[key] = it }
+        try {
+            backingMap[key] ?: nodeContractStateValuesProvider.getForKeyAsNullable(contractId, key)?.also { backingMap[key] = it }
+        } catch (ex: DataKeyNotExistException) {
+            null
+        }
 
     private fun <T> getNullableValue(key: String, valueType: Class<T>): T? =
         getKeyValue(key)?.run {
