@@ -5,7 +5,7 @@ Java/Kotlin contract SDK used for building Docker smart contracts.
 All transaction handling is done via methods of a single class marked with `@ContractHandler` annotation. 
 The methods which implement handling logic are marked with `@ContractInit` (for CreateContractTx) and `@ContractAction` (for CallContractTx).      
 
-## Module structure
+## Module structure.
 
 - **we-contract-sdk-api.**
 Contains mainly interfaces and annotations for marking contract handlers and their methods. 
