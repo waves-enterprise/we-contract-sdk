@@ -26,7 +26,7 @@ import com.wavesenterprise.sdk.node.domain.tx.ContractTx
 import com.wavesenterprise.sdk.tx.signer.TxSigner
 import java.lang.reflect.Proxy
 
-class ContractBlockingClientFactory<S>(
+open class ContractBlockingClientFactory<S>(
     private val contractClass: Class<out S>?,
     private val contractInterface: Class<S>,
     private val localContractValidation: LocalContractValidation,
@@ -52,7 +52,7 @@ class ContractBlockingClientFactory<S>(
     private val txTypeResolver: TxTypeResolver = TxTypeResolverImpl()
     private val invocationHandlerFactory = ContractHandlerInvocationHandlerFactory(paramsBuilder, txTypeResolver)
 
-    fun executeContract(contractId: ContractId? = null, txSigner: TxSigner, receiver: (S) -> Unit): ExecutionContext {
+    open fun executeContract(contractId: ContractId? = null, txSigner: TxSigner, receiver: (S) -> Unit): ExecutionContext {
         return executionContext(
             contractId = contractId,
             txSigner = txSigner,
@@ -60,7 +60,7 @@ class ContractBlockingClientFactory<S>(
         )
     }
 
-    fun executeContract(contractId: ContractId? = null, receiver: (S) -> Unit): ExecutionContext {
+    open fun executeContract(contractId: ContractId? = null, receiver: (S) -> Unit): ExecutionContext {
         requireNotNull(txSigner) {
             "TxSigner can not be null"
         }
